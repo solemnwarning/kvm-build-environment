@@ -1,0 +1,1 @@
+*/30 * * * * git /usr/local/bin/update-git-mirrors

@@ -3,5 +3,6 @@
 terraform.tfstate
 terraform.tfstate.backup
 
+git-cache.build.solemnwarning.net.crt
 snappass.build.solemnwarning.net.crt
 vcpkg-cache.build.solemnwarning.net.crt

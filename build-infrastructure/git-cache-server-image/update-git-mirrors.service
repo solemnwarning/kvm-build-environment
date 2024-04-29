@@ -1,0 +1,13 @@
+[Unit]
+Description=Updates Git repository mirrors
+Wants=update-git-mirrors.timer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/update-git-mirrors
+
+User=git
+Group=git
+
+[Install]
+WantedBy=multi-user.target

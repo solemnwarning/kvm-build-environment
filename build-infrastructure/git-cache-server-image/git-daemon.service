@@ -1,0 +1,11 @@
+[Unit]
+Description=Git Daemon
+
+[Service]
+ExecStart=/usr/bin/git daemon --reuseaddr --base-path=/srv/git/ /srv/git/
+
+User=git
+Group=git
+
+[Install]
+WantedBy=multi-user.target

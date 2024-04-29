@@ -70,3 +70,35 @@ resource "local_file" "vcpkg_cache_https_cert" {
 
     content = "${module.vcpkg_cache.https_cert}"
 }
+
+module "git_cache" {
+  source    = "./git-cache-server-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost01
+  }
+
+  hostname = "git-cache"
+  domain = "build.solemnwarning.net"
+
+  ip_and_prefix = "172.24.134.6/26"
+  gateway = "172.24.134.1"
+  dns_server = "172.24.128.1"
+
+  http_proxy_url = var.http_proxy_url
+}
+
+output "git_cache_root_password" {
+    value = "${module.git_cache.root_password}"
+    sensitive = true
+}
+
+output "git_cache_https_cert" {
+    value = "${module.git_cache.https_cert}"
+}
+
+resource "local_file" "git_cache_https_cert" {
+    filename = "${ path.root }/git-cache.build.solemnwarning.net.crt"
+    file_permission = "0644"
+
+    content = "${module.git_cache.https_cert}"
+}
