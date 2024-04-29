@@ -2,3 +2,6 @@
 .terraform.lock.hcl
 terraform.tfstate
 terraform.tfstate.backup
+
+snappass.build.solemnwarning.net.crt
+vcpkg-cache.build.solemnwarning.net.crt

@@ -34,6 +34,13 @@ output "snappass_https_cert" {
     value = "${module.snappass.https_cert}"
 }
 
+resource "local_file" "snappass_https_cert" {
+    filename = "${ path.root }/snappass.build.solemnwarning.net.crt"
+    file_permission = "0644"
+
+    content = "${module.snappass.https_cert}"
+}
+
 module "vcpkg_cache" {
   source    = "./vcpkg-cache-server-deploy/"
   providers = {
@@ -55,4 +62,11 @@ output "vcpkg_cache_root_password" {
 
 output "vcpkg_cache_https_cert" {
     value = "${module.vcpkg_cache.https_cert}"
+}
+
+resource "local_file" "vcpkg_cache_https_cert" {
+    filename = "${ path.root }/vcpkg-cache.build.solemnwarning.net.crt"
+    file_permission = "0644"
+
+    content = "${module.vcpkg_cache.https_cert}"
 }
