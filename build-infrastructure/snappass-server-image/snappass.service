@@ -1,0 +1,17 @@
+[Unit]
+Description=SnapPass
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+
+User=snappass
+Group=snappass
+
+ExecStart=/opt/snappass/bin/waitress-serve --listen 127.0.0.1:5000 snappass.main:app
+
+[Install]
+WantedBy=multi-user.target
