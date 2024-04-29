@@ -1,0 +1,17 @@
+[Unit]
+Description=vcpkg HTTP cache server
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+
+User=vcpkg-cache
+Group=vcpkg-cache
+
+ExecStart=/usr/local/bin/vcpkg-cache-http -host 127.0.0.1 files:/srv/vcpkg-cache/
+
+[Install]
+WantedBy=multi-user.target

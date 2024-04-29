@@ -33,3 +33,26 @@ output "snappass_root_password" {
 output "snappass_https_cert" {
     value = "${module.snappass.https_cert}"
 }
+
+module "vcpkg_cache" {
+  source    = "./vcpkg-cache-server-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost01
+  }
+
+  hostname = "vcpkg-cache"
+  domain = "build.solemnwarning.net"
+
+  ip_and_prefix = "172.24.134.7/26"
+  gateway = "172.24.134.1"
+  dns_server = "172.24.128.1"
+}
+
+output "vcpkg_cache_root_password" {
+    value = "${module.vcpkg_cache.root_password}"
+    sensitive = true
+}
+
+output "vcpkg_cache_https_cert" {
+    value = "${module.vcpkg_cache.https_cert}"
+}
