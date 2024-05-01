@@ -1,0 +1,49 @@
+#cloud-config
+hostname: ${ hostname }
+fqdn: ${ hostname }.${ domain }
+
+timezone: "Europe/London"
+
+users:
+  - name: root
+    lock_passwd: false
+    hashed_passwd: ${root_password.bcrypt_hash}
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7AoMN5Llbmwg9uuEzTl7gpsFZLKriLLk42KkyFcn4iovpn0K52NQsyfNK/sWMoyoLCaY58KnVRA14Jv9bp4A9ICN05X+DoU3BB92CFK3qhuUfvsP9I5q0am4yqTy62C4euWYJOvGWI1PjplCkR3r66vlC7lgzioySKFPYyrVZzkFdCKIWaeSYW4GsjX9/9a96fIT9XLAKREupK3IFF0Da07X0vJI5Vl3y4NaE9IbB/JzUVk9Wn42bYS3oF+m0YNppO88ErtD5Z2OpzcUDabFJemX0x8oYWeu+vgGFuEaMs6lD1kJPAWNoyC/8Ew5DotXjhiUNWpr3kF0T0/pQ5mGr solemnwarning@infinity
+
+  - name: buildkite-agent
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7AoMN5Llbmwg9uuEzTl7gpsFZLKriLLk42KkyFcn4iovpn0K52NQsyfNK/sWMoyoLCaY58KnVRA14Jv9bp4A9ICN05X+DoU3BB92CFK3qhuUfvsP9I5q0am4yqTy62C4euWYJOvGWI1PjplCkR3r66vlC7lgzioySKFPYyrVZzkFdCKIWaeSYW4GsjX9/9a96fIT9XLAKREupK3IFF0Da07X0vJI5Vl3y4NaE9IbB/JzUVk9Wn42bYS3oF+m0YNppO88ErtD5Z2OpzcUDabFJemX0x8oYWeu+vgGFuEaMs6lD1kJPAWNoyC/8Ew5DotXjhiUNWpr3kF0T0/pQ5mGr solemnwarning@infinity
+
+ssh_keys:
+  ecdsa_private: |
+    ${ indent(4, ssh_host_ecdsa.private_key_pem) }
+  ed25519_private: |
+    ${ indent(4, ssh_host_ed25519.private_key_pem) }
+  rsa_private: |
+    ${ indent(4, ssh_host_rsa.private_key_pem) }
+
+ssh_genkeytypes: [rsa, ecdsa, ed25519]
+ssh_quiet_keygen: true
+ssh_publish_hostkeys:
+  enabled: true
+  blacklist: [dsa]
+
+bootcmd:
+  # Set proxy to be used by buildkite agent
+  - mkdir /etc/systemd/system/buildkite-agent.service.d
+  - cat > /etc/systemd/system/buildkite-agent.service.d/proxy.conf <<EOF
+  - "[Service]"
+  - Environment=http_proxy=${http_proxy_url}
+  - Environment=https_proxy=${http_proxy_url}
+  - EOF
+  - systemctl daemon-reload
+
+  # Inject Buildkite agent token
+  - sed -i -e 's/BUILDKITE_AGENT_TOKEN/${buildkite_agent_token}/g' /etc/buildkite-agent/buildkite-agent.cfg
+
+runcmd:
+  # Force DHCP release so our (new) hostname gets inserted into DNS
+  # https://serverfault.com/a/970459
+  - dhclient -r
+  - dhclient

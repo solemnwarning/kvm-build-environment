@@ -1,0 +1,12 @@
+[Unit]
+Description=Initialise ipxtester
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/ipxtester init
+RemainAfterExit=true
+StandardOutput=journal
+User=buildkite-agent
+
+[Install]
+WantedBy=multi-user.target

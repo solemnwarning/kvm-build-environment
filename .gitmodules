@@ -1,0 +1,3 @@
+[submodule "build-agents/ipxwrapper-test-agent-image/ipxwrapper-ci"]
+	path = build-agents/ipxwrapper-test-agent-image/ipxwrapper-ci
+	url = https://github.com/solemnwarning/ipxwrapper-ci.git
