@@ -1,0 +1,4 @@
+/msvc-build-tools/
+/packer-Win2022/output-qemu/
+/packer-Win2022/virtio-win-*.iso
+/builds/

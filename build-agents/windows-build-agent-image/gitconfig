@@ -1,0 +1,9 @@
+[http]
+	proxy = http://cache.lan.solemnwarning.net:8080/
+
+[http "https://git-cache.build.solemnwarning.net/"]
+	proxy =
+	sslCAInfo = C:\\buildkite-agent\\git-cache-https.pem
+
+[url "https://git-cache.build.solemnwarning.net/vcpkg.git"]
+	insteadOf = https://github.com/microsoft/vcpkg.git

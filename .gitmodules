@@ -1,3 +1,6 @@
 [submodule "build-agents/ipxwrapper-test-agent-image/ipxwrapper-ci"]
 	path = build-agents/ipxwrapper-test-agent-image/ipxwrapper-ci
 	url = https://github.com/solemnwarning/ipxwrapper-ci.git
+[submodule "build-agents/windows-build-agent-image/packer-Win2022"]
+	path = build-agents/windows-build-agent-image/packer-Win2022
+	url = https://github.com/eaksel/packer-Win2022.git
