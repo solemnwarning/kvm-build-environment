@@ -39,6 +39,45 @@ module "ipxwrapper_test_vmhost01" {
   http_proxy_url = var.http_proxy_url
 }
 
+output "ipxwrapper_test_vmhost01_root_password" {
+    value = "${module.ipxwrapper_test_vmhost01.root_password}"
+    sensitive = true
+}
+
+module "ipxwrapper_test_vmhost02" {
+  source    = "./ipxwrapper-test-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost02
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+}
+
+output "ipxwrapper_test_vmhost02_root_password" {
+    value = "${module.ipxwrapper_test_vmhost02.root_password}"
+    sensitive = true
+}
+
+module "ipxwrapper_test_vmhost03" {
+  source    = "./ipxwrapper-test-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost03
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+}
+
+output "ipxwrapper_test_vmhost03_root_password" {
+    value = "${module.ipxwrapper_test_vmhost03.root_password}"
+    sensitive = true
+}
+
 module "ipxwrapper_test_vmhost04" {
   source    = "./ipxwrapper-test-agent-deploy/"
   providers = {
