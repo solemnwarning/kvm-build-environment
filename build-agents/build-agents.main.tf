@@ -161,3 +161,124 @@ module "windows_build_vmhost04_b" {
   vcpu   = 24
   spawn  = 1
 }
+
+resource "tls_private_key" "buildkite_user_ssh_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+output buildkite_user_public_ssh_key {
+  value = tls_private_key.buildkite_user_ssh_key.public_key_openssh
+}
+
+module "debian_build_vmhost01" {
+  source    = "./debian-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost01
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+
+  buildkite_user_ssh_key = tls_private_key.buildkite_user_ssh_key
+
+  memory = 16384
+  vcpu   = 8
+}
+
+output "debian_build_vmhost01_root_password" {
+    value = "${module.debian_build_vmhost01.root_password}"
+    sensitive = true
+}
+
+module "debian_build_vmhost02" {
+  source    = "./debian-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost02
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+
+  buildkite_user_ssh_key = tls_private_key.buildkite_user_ssh_key
+
+  memory = 16384
+  vcpu   = 8
+}
+
+output "debian_build_vmhost02_root_password" {
+    value = "${module.debian_build_vmhost02.root_password}"
+    sensitive = true
+}
+
+module "debian_build_vmhost03" {
+  source    = "./debian-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost03
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+
+  buildkite_user_ssh_key = tls_private_key.buildkite_user_ssh_key
+
+  memory = 16384
+  vcpu   = 8
+}
+
+output "debian_build_vmhost03_root_password" {
+    value = "${module.debian_build_vmhost03.root_password}"
+    sensitive = true
+}
+
+module "debian_build_vmhost04_a" {
+  source    = "./debian-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost04
+  }
+
+  hostname_suffix = "-a"
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+
+  buildkite_user_ssh_key = tls_private_key.buildkite_user_ssh_key
+
+  memory = 49152
+  vcpu   = 24
+}
+
+output "debian_build_vmhost04_a_root_password" {
+    value = "${module.debian_build_vmhost04_a.root_password}"
+    sensitive = true
+}
+
+module "debian_build_vmhost04_b" {
+  source    = "./debian-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost04
+  }
+
+  hostname_suffix = "-b"
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+
+  buildkite_user_ssh_key = tls_private_key.buildkite_user_ssh_key
+
+  memory = 49152
+  vcpu   = 24
+}
+
+output "debian_build_vmhost04_b_root_password" {
+    value = "${module.debian_build_vmhost04_b.root_password}"
+    sensitive = true
+}
