@@ -7,7 +7,7 @@ rem Add MSYS to PATH so buildkite-agent can find its Git.
 set PATH=%PATH%;C:\msys64\usr\bin
 
 set X_PARALLEL_JOBS=%NUMBER_OF_PROCESSORS%
-set VCPKG_BINARY_SOURCES=clear;http,http://alfred.solemnwarning.net:15151/{name}/{version}/{sha},readwrite
+set VCPKG_BINARY_SOURCES=clear;http,https://vcpkg-cache.build.solemnwarning.net/{name}/{version}/{sha},readwrite
 
 FOR /F %%i IN ('buildkite-agent step get --format json agents') DO (
 	IF [%%i] == ["queue=mingw-i686"] (

@@ -49,6 +49,7 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
       hostname = "${ local.hostname }"
       spawn = var.spawn
       git_cache_https_cert = data.terraform_remote_state.build_infrastructure.outputs.git_cache_https_cert
+      vcpkg_cache_https_cert = data.terraform_remote_state.build_infrastructure.outputs.vcpkg_cache_https_cert
   }), "\r", ""), "\n", "\r\n")
 }
 

@@ -28,6 +28,8 @@ IF EXIST D:\user-data (
 	
 	rem Also we stash some certificates in it...
 	C:\msys64\usr\bin\awk "/^>>>/{f=0};f;/^>>> git-cache-https/{f=1}" D:\user-data > C:\buildkite-agent\git-cache-https.pem
+	C:\msys64\usr\bin\awk "/^>>>/{f=0};f;/^>>> vcpkg-cache-https/{f=1}" D:\user-data > C:\buildkite-agent\vcpkg-cache-https.pem
+	certutil.exe -addstore Root C:\buildkite-agent\vcpkg-cache-https.pem
 )
 
 C:\buildkite-agent\bin\buildkite-agent.exe start
