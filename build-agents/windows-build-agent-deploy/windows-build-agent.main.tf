@@ -36,6 +36,13 @@ resource "libvirt_volume" "root" {
   pool   = var.storage_pool
   source = local.image_path
   format = "qcow2"
+
+  # Ensure disk is reset to initial state if cloud-init data is changed.
+  lifecycle {
+    replace_triggered_by = [
+      libvirt_cloudinit_disk.cloud_init.id,
+    ]
+  }
 }
 
 resource "libvirt_cloudinit_disk" "cloud_init" {
