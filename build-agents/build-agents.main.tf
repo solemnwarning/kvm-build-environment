@@ -282,3 +282,87 @@ output "debian_build_vmhost04_b_root_password" {
     value = "${module.debian_build_vmhost04_b.root_password}"
     sensitive = true
 }
+
+module "freebsd_build_vmhost01" {
+  source    = "./freebsd-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost01
+  }
+
+  hostname_suffix = ""
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+
+  memory = 16384
+  vcpu   = 8
+}
+
+output "freebsd_build_vmhost01_root_password" {
+    value = "${module.freebsd_build_vmhost01.root_password}"
+    sensitive = true
+}
+
+module "freebsd_build_vmhost02" {
+  source    = "./freebsd-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost02
+  }
+
+  hostname_suffix = ""
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+
+  memory = 16384
+  vcpu   = 8
+}
+
+output "freebsd_build_vmhost02_root_password" {
+    value = "${module.freebsd_build_vmhost02.root_password}"
+    sensitive = true
+}
+
+module "freebsd_build_vmhost03" {
+  source    = "./freebsd-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost03
+  }
+
+  hostname_suffix = ""
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+
+  memory = 16384
+  vcpu   = 8
+}
+
+output "freebsd_build_vmhost03_root_password" {
+    value = "${module.freebsd_build_vmhost03.root_password}"
+    sensitive = true
+}
+
+module "freebsd_build_vmhost04" {
+  source    = "./freebsd-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost04
+  }
+
+  hostname_suffix = ""
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+
+  memory = 49152
+  vcpu   = 24
+}
+
+output "freebsd_build_vmhost04_root_password" {
+    value = "${module.freebsd_build_vmhost04.root_password}"
+    sensitive = true
+}
