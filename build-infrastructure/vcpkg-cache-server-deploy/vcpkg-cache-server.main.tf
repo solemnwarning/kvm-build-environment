@@ -101,6 +101,7 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
     domain   = var.domain
 
     root_password = random_password.root_password
+    admin_ssh_keys = var.admin_ssh_keys
 
     https_cert = tls_self_signed_cert.https_cert
     https_key  = tls_private_key.https_key

@@ -10,7 +10,9 @@ users:
     hashed_passwd: ${root_password.bcrypt_hash}
     # plain_text_passwd: root
     ssh_authorized_keys:
-      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7AoMN5Llbmwg9uuEzTl7gpsFZLKriLLk42KkyFcn4iovpn0K52NQsyfNK/sWMoyoLCaY58KnVRA14Jv9bp4A9ICN05X+DoU3BB92CFK3qhuUfvsP9I5q0am4yqTy62C4euWYJOvGWI1PjplCkR3r66vlC7lgzioySKFPYyrVZzkFdCKIWaeSYW4GsjX9/9a96fIT9XLAKREupK3IFF0Da07X0vJI5Vl3y4NaE9IbB/JzUVk9Wn42bYS3oF+m0YNppO88ErtD5Z2OpzcUDabFJemX0x8oYWeu+vgGFuEaMs6lD1kJPAWNoyC/8Ew5DotXjhiUNWpr3kF0T0/pQ5mGr solemnwarning@infinity
+      %{ for key in admin_ssh_keys ~}
+      - ${ key }
+      %{ endfor ~}
 
 ssh_keys:
   ecdsa_private: |

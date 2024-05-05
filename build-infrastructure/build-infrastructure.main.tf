@@ -53,6 +53,8 @@ module "vcpkg_cache" {
   ip_and_prefix = "172.24.134.7/26"
   gateway = "172.24.134.1"
   dns_server = "172.24.128.1"
+
+  admin_ssh_keys = var.admin_ssh_keys
 }
 
 output "vcpkg_cache_root_password" {
@@ -85,6 +87,7 @@ module "git_cache" {
   dns_server = "172.24.128.1"
 
   http_proxy_url = var.http_proxy_url
+  admin_ssh_keys = var.admin_ssh_keys
 }
 
 output "git_cache_root_password" {

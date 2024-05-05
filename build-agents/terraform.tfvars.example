@@ -1,0 +1,11 @@
+# HTTP proxy server (optional).
+# http_proxy_url = "http://cache.lan.solemnwarning.net:8080/"
+
+# Buildkite agent token (for all build agents).
+buildkite_agent_token = "..."
+
+# SSH public keys for administration (root login).
+admin_ssh_keys = [
+  "ssh-rsa ...",
+  "ssh-rsa ...",
+]

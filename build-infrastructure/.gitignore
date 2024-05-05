@@ -2,6 +2,7 @@
 .terraform.lock.hcl
 terraform.tfstate
 terraform.tfstate.backup
+terraform.tfvars
 
 git-cache.build.solemnwarning.net.crt
 snappass.build.solemnwarning.net.crt

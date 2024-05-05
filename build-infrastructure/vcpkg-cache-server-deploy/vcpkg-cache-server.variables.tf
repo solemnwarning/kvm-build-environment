@@ -22,3 +22,7 @@ variable "gateway" {
 variable "dns_server" {
   type = string
 }
+
+variable "admin_ssh_keys" {
+  type = list(string)
+}

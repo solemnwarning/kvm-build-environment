@@ -84,6 +84,7 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
 
     buildkite_agent_token = var.buildkite_agent_token
     http_proxy_url        = var.http_proxy_url
+    admin_ssh_keys        = var.admin_ssh_keys
   })
 }
 
