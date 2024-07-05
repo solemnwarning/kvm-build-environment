@@ -126,7 +126,7 @@ build {
 
   provisioner "shell" {
     inline = [
-      "apt-get install -y libconfig-ini-perl libipc-run-perl libnetaddr-ip-perl libio-fdpass-perl",
+      "apt-get install -y libconfig-ini-perl libipc-run-perl libnetaddr-ip-perl libio-fdpass-perl mtools",
       "install -D -m 0755 -o root -g root /tmp/ipxtester     /opt/ipxtester/ipxtester",
       "install -D -m 0755 -o root -g root /tmp/ipxtester.ini /opt/ipxtester/ipxtester.ini",
 
@@ -154,7 +154,7 @@ build {
   # Upload VM disk images
 
   provisioner "file" {
-    source = "ipxtester-images/ipxtest-director-2023-09-12"
+    source = "ipxtester-images/ipxtest-director-2024-07-03"
     destination = "/mnt/ipxtester-data/images/"
   }
 
@@ -175,6 +175,11 @@ build {
 
   provisioner "file" {
     source = "ipxtester-images/ipxtest-win10x64-2023-09-13"
+    destination = "/mnt/ipxtester-data/images/"
+  }
+
+  provisioner "file" {
+    source = "ipxtester-images/ipxtest-win98-2024-07-04"
     destination = "/mnt/ipxtester-data/images/"
   }
 
