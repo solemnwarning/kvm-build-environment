@@ -2,14 +2,6 @@
 
 SETLOCAL EnableDelayedExpansion
 
-rem If MSYSTEM has been set in the environment, then we are running a job for a
-rem MinGW queue and should pipe the commands into bash.
-
-IF NOT "%MSYSTEM%" == "" (
-	C:\msys64\usr\bin\bash.exe -lec "cd \"$1\" && bash -xe <<< $BUILDKITE_COMMAND" -- "%cd%"
-	EXIT !ERRORLEVEL!
-)
-
 rem Map the working directory to a free drive letter using subst so we can run
 rem the actual build commands with a shorter effective path to the working
 rem directory to work around paths exceeding the classic Windows filename limit
@@ -31,6 +23,14 @@ IF %subst_letter% == NONE (
 )
 
 ECHO Mapped %cd% to %subst_letter%:
+
+rem If MSYSTEM has been set in the environment, then we are running a job for a
+rem MinGW queue and should pipe the commands into bash.
+
+IF NOT "%MSYSTEM%" == "" (
+	C:\msys64\usr\bin\bash.exe -lec "cd \"$1\" && bash -xe <<< $BUILDKITE_COMMAND" -- "/%subst_letter%/"
+	EXIT !ERRORLEVEL!
+)
 
 rem Write out a file containing all of the commands from the BUILDKITE_COMMAND
 rem environment variable outside of the working directory so we can execute
