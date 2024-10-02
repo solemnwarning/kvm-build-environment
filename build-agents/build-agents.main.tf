@@ -379,3 +379,47 @@ output "freebsd_build_vmhost04_root_password" {
     value = "${module.freebsd_build_vmhost04.root_password}"
     sensitive = true
 }
+
+module "copr_cli_vmhost01" {
+  source    = "./copr-cli-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost01
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+  admin_ssh_keys = var.admin_ssh_keys
+  copr_config = var.copr_config
+
+  memory = 1024
+  vcpu   = 2
+}
+
+output "copr_cli_vmhost01_root_password" {
+    value = "${module.copr_cli_vmhost01.root_password}"
+    sensitive = true
+}
+
+module "copr_cli_vmhost02" {
+  source    = "./copr-cli-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost02
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+  admin_ssh_keys = var.admin_ssh_keys
+  copr_config = var.copr_config
+
+  memory = 1024
+  vcpu   = 2
+}
+
+output "copr_cli_vmhost02_root_password" {
+    value = "${module.copr_cli_vmhost02.root_password}"
+    sensitive = true
+}

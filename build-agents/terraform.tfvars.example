@@ -9,3 +9,12 @@ admin_ssh_keys = [
   "ssh-rsa ...",
   "ssh-rsa ...",
 ]
+
+# Fedora COPR credentials
+copr_config = <<-EOT
+[copr-cli]
+login = ...
+username = ...
+token = ...
+copr_url = https://copr.fedorainfracloud.org
+EOT
