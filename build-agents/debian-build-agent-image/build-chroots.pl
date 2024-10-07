@@ -49,12 +49,12 @@ sub ubuntu_extras
 	);
 }
 
-create("bionic-i386-sbuild",   "i386",  "bionic",  "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("bionic"));
-create("bionic-amd64-sbuild",  "amd64", "bionic",  "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("bionic"));
-create("focal-amd64-sbuild",   "amd64", "focal",   "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("focal"));
-create("jammy-amd64-sbuild",   "amd64", "jammy",   "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("jammy"));
-create("mantic-amd64-sbuild",  "amd64", "mantic",  "http://archive.ubuntu.com/ubuntu/", "gutsy", ubuntu_extras("mantic"));
-create("noble-amd64-sbuild",   "amd64", "noble",   "http://archive.ubuntu.com/ubuntu/", "gutsy", ubuntu_extras("noble"));
+create("bionic-i386-sbuild",     "i386",  "bionic",    "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("bionic"));
+create("bionic-amd64-sbuild",    "amd64", "bionic",    "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("bionic"));
+create("focal-amd64-sbuild",     "amd64", "focal",     "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("focal"));
+create("jammy-amd64-sbuild",     "amd64", "jammy",     "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("jammy"));
+create("noble-amd64-sbuild",     "amd64", "noble",     "http://archive.ubuntu.com/ubuntu/", "gutsy", ubuntu_extras("noble"));
+create("oracular-amd64-sbuild",  "amd64", "oracular",  "http://archive.ubuntu.com/ubuntu/", "gutsy", ubuntu_extras("oracular"));
 
 # Until all sbuild-createchroot processes have finished...
 while(%procs)
