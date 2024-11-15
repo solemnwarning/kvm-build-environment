@@ -17,7 +17,7 @@ build {
 
   provisioner "shell" {
     inline = [
-      "pkg install -y py39-cloud-init",
+      "pkg install -y py311-cloud-init",
       "echo cloudinit_enable=YES >> /etc/rc.conf",
     ]
   }
@@ -88,7 +88,7 @@ build {
 }
 
 source qemu "freebsd" {
-  iso_url      = "https://download.freebsd.org/ftp/snapshots/VM-IMAGES/14.0-STABLE/amd64/Latest/FreeBSD-14.0-STABLE-amd64-BASIC-CLOUDINIT.ufs.qcow2.xz"
+  iso_url      = "https://download.freebsd.org/ftp/snapshots/VM-IMAGES/14.2-STABLE/amd64/Latest/FreeBSD-14.2-STABLE-amd64-BASIC-CLOUDINIT.ufs.qcow2.xz"
   iso_checksum = "none"
   # iso_checksum = "file:https://download.freebsd.org/ftp/snapshots/VM-IMAGES/14.0-STABLE/amd64/Latest/CHECKSUM.SHA256"
   disk_image   = true
