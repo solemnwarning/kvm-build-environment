@@ -199,8 +199,10 @@ build {
 data "sshkey" "install" {}
 
 source qemu "debian" {
-  iso_url      = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2"
-  iso_checksum = "file:https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS"
+  # iso_url      = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2"
+  # iso_checksum = "file:https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS"
+  iso_url      = "https://cloud.debian.org/images/cloud/bookworm/20241004-1890/debian-12-genericcloud-amd64-20241004-1890.qcow2"
+  iso_checksum = "file:https://cloud.debian.org/images/cloud/bookworm/20241004-1890/SHA512SUMS"
   disk_image   = true
 
   ssh_private_key_file = data.sshkey.install.private_key_path
