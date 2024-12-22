@@ -179,7 +179,7 @@ build {
   }
 
   provisioner "file" {
-    source = "ipxtester-images/ipxtest-win98-2024-07-04"
+    source = "ipxtester-images/ipxtest-win98-2024-11-03"
     destination = "/mnt/ipxtester-data/images/"
   }
 
