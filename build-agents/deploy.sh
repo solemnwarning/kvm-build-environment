@@ -18,10 +18,10 @@ cd "$(dirname "$0")/"
 terraform init
 terraform validate
 
-powerwake 98:90:96:db:85:40
-powerwake 64:00:6a:5d:b3:6e
+powerwake vmhost02.lan.solemnwarning.net
+powerwake vmhost03.lan.solemnwarning.net
 
-powerwake -w -t 300 98:90:96:db:85:40
-powerwake -w -t 300 64:00:6a:5d:b3:6e
+powerwake -w -t 300 vmhost02.lan.solemnwarning.net
+powerwake -w -t 300 vmhost03.lan.solemnwarning.net
 
 terraform apply $auto_approve
