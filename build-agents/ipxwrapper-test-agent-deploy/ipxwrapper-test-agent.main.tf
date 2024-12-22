@@ -83,6 +83,7 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
     ssh_host_rsa     = tls_private_key.ssh_host_rsa
 
     buildkite_agent_token = var.buildkite_agent_token
+    buildkite_agent_spawn = var.spawn
     http_proxy_url        = var.http_proxy_url
     admin_ssh_keys        = var.admin_ssh_keys
   })
@@ -91,8 +92,8 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
 resource "libvirt_domain" "domain" {
   name = "${ local.hostname }.${ var.domain }"
 
-  memory  = "16384"
-  vcpu    = 8
+  memory  = var.memory
+  vcpu    = var.vcpu
   running = false
 
   cpu {

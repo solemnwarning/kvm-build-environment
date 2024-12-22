@@ -7,6 +7,18 @@ variable "domain" {
   type = string
 }
 
+variable "memory" {
+  type = number
+}
+
+variable "vcpu" {
+  type = number
+}
+
+variable "spawn" {
+  type = number
+}
+
 variable "http_proxy_url" {
   type = string
   default = ""

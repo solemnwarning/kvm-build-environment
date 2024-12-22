@@ -38,6 +38,10 @@ module "ipxwrapper_test_vmhost01" {
   buildkite_agent_token = var.buildkite_agent_token
   http_proxy_url = var.http_proxy_url
   admin_ssh_keys = var.admin_ssh_keys
+
+  memory = 16384
+  vcpu = 8
+  spawn = 1
 }
 
 output "ipxwrapper_test_vmhost01_root_password" {
@@ -56,6 +60,10 @@ module "ipxwrapper_test_vmhost02" {
   buildkite_agent_token = var.buildkite_agent_token
   http_proxy_url = var.http_proxy_url
   admin_ssh_keys = var.admin_ssh_keys
+
+  memory = 16384
+  vcpu = 8
+  spawn = 1
 }
 
 output "ipxwrapper_test_vmhost02_root_password" {
@@ -74,6 +82,10 @@ module "ipxwrapper_test_vmhost03" {
   buildkite_agent_token = var.buildkite_agent_token
   http_proxy_url = var.http_proxy_url
   admin_ssh_keys = var.admin_ssh_keys
+
+  memory = 16384
+  vcpu = 8
+  spawn = 1
 }
 
 output "ipxwrapper_test_vmhost03_root_password" {
@@ -92,6 +104,10 @@ module "ipxwrapper_test_vmhost04" {
   buildkite_agent_token = var.buildkite_agent_token
   http_proxy_url = var.http_proxy_url
   admin_ssh_keys = var.admin_ssh_keys
+
+  memory = 65536
+  vcpu = 28
+  spawn = 4
 }
 
 output "ipxwrapper_test_vmhost04_root_password" {
