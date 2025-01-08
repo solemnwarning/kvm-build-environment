@@ -83,9 +83,9 @@ module "ipxwrapper_test_vmhost03" {
   http_proxy_url = var.http_proxy_url
   admin_ssh_keys = var.admin_ssh_keys
 
-  memory = 16384
-  vcpu = 8
-  spawn = 1
+  memory = 65536
+  vcpu = 32
+  spawn = 4
 }
 
 output "ipxwrapper_test_vmhost03_root_password" {
@@ -141,16 +141,31 @@ module "windows_build_vmhost02" {
   spawn  = 1
 }
 
-module "windows_build_vmhost03" {
+module "windows_build_vmhost03_a" {
   source    = "./windows-build-agent-deploy/"
   providers = {
     libvirt = libvirt.vmhost03
   }
 
+  hostname_suffix = "-a"
   domain = "build.solemnwarning.net"
 
-  memory = 16384
-  vcpu   = 8
+  memory = 49152
+  vcpu   = 42
+  spawn  = 1
+}
+
+module "windows_build_vmhost03_b" {
+  source    = "./windows-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost03
+  }
+
+  hostname_suffix = "-b"
+  domain = "build.solemnwarning.net"
+
+  memory = 49152
+  vcpu   = 42
   spawn  = 1
 }
 
@@ -237,12 +252,13 @@ output "debian_build_vmhost02_root_password" {
     sensitive = true
 }
 
-module "debian_build_vmhost03" {
+module "debian_build_vmhost03_a" {
   source    = "./debian-build-agent-deploy/"
   providers = {
     libvirt = libvirt.vmhost03
   }
 
+  hostname_suffix = "-a"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -251,12 +267,36 @@ module "debian_build_vmhost03" {
 
   buildkite_user_ssh_key = tls_private_key.buildkite_user_ssh_key
 
-  memory = 16384
-  vcpu   = 8
+  memory = 49152
+  vcpu   = 42
 }
 
-output "debian_build_vmhost03_root_password" {
-    value = "${module.debian_build_vmhost03.root_password}"
+output "debian_build_vmhost03_a_root_password" {
+    value = "${module.debian_build_vmhost03_a.root_password}"
+    sensitive = true
+}
+
+module "debian_build_vmhost03_b" {
+  source    = "./debian-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost03
+  }
+
+  hostname_suffix = "-b"
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+  admin_ssh_keys = var.admin_ssh_keys
+
+  buildkite_user_ssh_key = tls_private_key.buildkite_user_ssh_key
+
+  memory = 49152
+  vcpu   = 42
+}
+
+output "debian_build_vmhost03_b_root_password" {
+    value = "${module.debian_build_vmhost03_b.root_password}"
     sensitive = true
 }
 
@@ -365,8 +405,8 @@ module "freebsd_build_vmhost03" {
   http_proxy_url = var.http_proxy_url
   admin_ssh_keys = var.admin_ssh_keys
 
-  memory = 16384
-  vcpu   = 8
+  memory = 49152
+  vcpu   = 42
 }
 
 output "freebsd_build_vmhost03_root_password" {
