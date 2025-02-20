@@ -10,19 +10,6 @@ set X_PARALLEL_JOBS=%NUMBER_OF_PROCESSORS%
 set VCPKG_BINARY_SOURCES=clear;http,https://vcpkg-cache.build.solemnwarning.net/{name}/{version}/{sha},readwrite
 
 FOR /F %%i IN ('buildkite-agent step get --format json agents') DO (
-	IF [%%i] == ["queue=mingw-i686"] (
-		ECHO Using 32-bit MinGW toolchain
-		
-		IF "%toolchain_selected%" == "1" (
-			ECHO Multiple toolchains requested, aborting!
-			EXIT 1
-		)
-		
-		SET MSYSTEM=MINGW32
-		
-		SET toolchain_selected=1
-	)
-	
 	IF [%%i] == ["queue=mingw-x86_64"] (
 		ECHO Using 64-bit MinGW toolchain
 		
