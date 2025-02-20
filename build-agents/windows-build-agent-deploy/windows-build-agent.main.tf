@@ -66,6 +66,10 @@ resource "libvirt_domain" "windows_build_agent" {
   vcpu    = var.vcpu
   running = false
 
+  xml {
+    xslt = file("${ path.root }/windows-build-agent-deploy/windows-build-agent.domain.xsl")
+  }
+
   # Destroy the VM when replacing the disk, otherwise it may be left running
   # and the disk changed out from under it.
   lifecycle {
