@@ -1,0 +1,55 @@
+#cloud-config
+hostname: ${hostname}
+fqdn: ${hostname}.build.solemnwarning.net
+
+timezone: "Europe/London"
+
+users:
+  - name: root
+    lock_passwd: false
+    hashed_passwd: ${root_password.bcrypt_hash}
+    ssh_authorized_keys:
+      %{ for key in admin_ssh_keys ~}
+      - ${ key }
+      %{ endfor ~}
+
+ssh_keys:
+  ecdsa_private: |
+    ${ indent(4, ssh_host_ecdsa.private_key_pem) }
+  ed25519_private: |
+    ${ indent(4, ssh_host_ed25519.private_key_openssh) }
+  rsa_private: |
+    ${ indent(4, ssh_host_rsa.private_key_pem) }
+
+ssh_genkeytypes: [rsa, ecdsa, ed25519]
+ssh_quiet_keygen: true
+ssh_publish_hostkeys:
+  enabled: true
+  blacklist: [dsa]
+
+bootcmd:
+  # Set proxy to be used by APT (including chroots)
+  - for f in / /srv/chroot/*/
+  - do
+  -   echo 'Acquire::http::Proxy "${http_proxy_url}";' > "$f/etc/apt/apt.conf.d/proxy.conf"
+  -   echo 'Acquire::https::Proxy "${http_proxy_url}";' >> "$f/etc/apt/apt.conf.d/proxy.conf"
+  - done
+
+  # Set proxy to be used by buildkite agent
+  - mkdir /etc/systemd/system/buildkite-agent.service.d
+  - cat > /etc/systemd/system/buildkite-agent.service.d/proxy.conf <<EOF
+  - "[Service]"
+  - Environment=http_proxy=${http_proxy_url}
+  - Environment=https_proxy=${http_proxy_url}
+  - EOF
+  - systemctl daemon-reload
+
+  # Inject Buildkite agent token
+  - sed -i -e 's/BUILDKITE_AGENT_TOKEN/${buildkite_agent_token}/g' /etc/buildkite-agent/buildkite-agent.cfg
+  - sed -i -e 's/BUILDKITE_AGENT_SPAWN/${buildkite_agent_spawn}/g' /etc/buildkite-agent/buildkite-agent.cfg
+
+runcmd:
+  # Force DHCP release so our (new) hostname gets inserted into DNS
+  # https://serverfault.com/a/970459
+  - dhclient -r
+  - dhclient

@@ -1,0 +1,106 @@
+#!/bin/bash
+
+# The `environment` hook will run before all other commands, and can be used
+# to set up secrets, data, etc. Anything exported in hooks will be available
+# to the build script.
+#
+# For example:
+#
+# export SECRET_VAR=token
+
+# Note that as the script is sourced not run directly, the shebang line will be ignored
+# See https://buildkite.com/docs/agent/v3/hooks#creating-hook-scripts
+
+set -e
+
+# Pick a (hopefully free) port in the ephemeral range for SSH port forward.
+PORT_MIN=49152
+PORT_MAX=65535
+
+# Maximum number of seconds to wait for Windows VM to boot.
+MAX_BOOT_WAIT=300
+
+ssh_port="$(expr "$PORT_MIN" + "$(expr "$$" % "$(expr "$PORT_MAX" - "$PORT_MIN")")")"
+
+# Allocate temporary files for the QEMU disk image and PID file
+
+image_file="$(mktemp)"
+trap "rm -f $image_file" ERR
+
+pid_file="$(mktemp)"
+trap "rm -f $pid_file" ERR
+
+# Create copy-on-write clone of base image.
+qemu-img create -f qcow2 -F qcow2 -b /opt/winxp-image/winxp.qcow2 "$image_file"
+
+# Start QEMU is a whole new session. Somehow SIGHUP gets propagated through nohup when the
+# environment hook ends, so we need to use setsid.
+setsid -f \
+	qemu-system-x86_64 \
+		-machine type=pc,accel=kvm \
+		-device rtl8139,netdev=user.0 \
+		-netdev user,id=user.0,hostfwd=tcp::${ssh_port}-:22 \
+		-drive "file=${image_file},if=ide,cache=unsafe,format=qcow2" \
+		-vnc none \
+		-m 2048M \
+		-smp 2 \
+		-pidfile "$pid_file"
+
+# Give QEMU plenty of time to start and write out its PID
+sleep 10
+
+if [ -e "$pid_file" ]
+then
+	qemu_pid=$(cat "$pid_file")
+	rm -f "$pid_file"
+else
+	echo "QEMU didn't start (PID file missing)" 1>&2
+	exit 1
+fi
+
+# Kill QEMU if a command in this script fails
+trap "kill -KILL $qemu_pid" ERR
+
+echo "Waiting for Windows VM to boot..."
+
+remaining_secs=$MAX_BOOT_WAIT
+while true
+do
+	if ! kill -0 "$qemu_pid"
+	then
+		echo "QEMU unexpectedly exited" 1>&2
+		exit 1
+	fi
+	
+	if ssh -o ConnectTimeout=1 -p "$ssh_port" Administrator@localhost ';' > /dev/null 2>&1
+	then
+		break
+	fi
+	
+	remaining_secs=$(expr "$remaining_secs" - 1)
+	if [ "$remaining_secs" -le 0 ]
+	then
+		echo "Windows VM didn't boot after $MAX_BOOT_WAIT seconds" 1>&2
+		kill -KILL "$qemu_pid"
+		exit 1
+	fi
+	
+	sleep 1
+done
+
+rel_checkout_path="${BUILDKITE_BUILD_CHECKOUT_PATH#$BUILDKITE_BUILD_PATH}"
+smb_checkout_path="\\\\10.0.2.2\\builds$(tr '/' '\\' <<< "$rel_checkout_path")"
+
+# The checkout directory needs to exist for NET USE to be able to map it...
+mkdir -p "$BUILDKITE_BUILD_CHECKOUT_PATH"
+
+echo "Mapping VM drive X: to $smb_checkout_path..."
+ssh -p "$ssh_port" Administrator@localhost "NET USE X: $smb_checkout_path"
+
+# ...but it needs to be deleted for the checkout process, the mapping in
+# Windows will survive through to when the directory is re-mkdir'd now.
+rm -rf "$BUILDKITE_BUILD_CHECKOUT_PATH"
+
+export QEMU_SSH_PORT="$ssh_port"
+export QEMU_PID="$qemu_pid"
+export QEMU_DISK="$image_file"

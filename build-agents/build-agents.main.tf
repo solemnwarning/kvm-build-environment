@@ -479,3 +479,25 @@ output "copr_cli_vmhost02_root_password" {
     value = "${module.copr_cli_vmhost02.root_password}"
     sensitive = true
 }
+
+module "winxp_test_vmhost04" {
+  source    = "./winxp-test-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost04
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+  admin_ssh_keys = var.admin_ssh_keys
+
+  memory = 24576
+  vcpu = 24
+  spawn = 10
+}
+
+output "winxp_test_vmhost04_root_password" {
+    value = "${module.winxp_test_vmhost04.root_password}"
+    sensitive = true
+}
