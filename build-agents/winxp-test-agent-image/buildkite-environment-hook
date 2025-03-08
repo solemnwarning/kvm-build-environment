@@ -38,6 +38,7 @@ qemu-img create -f qcow2 -F qcow2 -b /opt/winxp-image/winxp.qcow2 "$image_file"
 setsid -f \
 	qemu-system-x86_64 \
 		-machine type=pc,accel=kvm \
+		-cpu pentium3 \
 		-device rtl8139,netdev=user.0 \
 		-netdev user,id=user.0,hostfwd=tcp::${ssh_port}-:22 \
 		-drive "file=${image_file},if=ide,cache=unsafe,format=qcow2" \

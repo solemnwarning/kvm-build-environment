@@ -25,6 +25,8 @@ variable "output_directory" {
 source "qemu" "winxp" {
   accelerator    = "kvm"
   net_device     = "rtl8139"
+  cpus           = 2
+  cpu_model      = "pentium3"
   memory         = 128
   disk_interface = "ide"
   disk_size      = "16G"
