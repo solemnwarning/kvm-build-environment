@@ -480,6 +480,73 @@ output "copr_cli_vmhost02_root_password" {
     sensitive = true
 }
 
+module "winxp_test_vmhost01" {
+  source    = "./winxp-test-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost01
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+  admin_ssh_keys = var.admin_ssh_keys
+
+  memory = 8192
+  vcpu = 8
+  spawn = 4
+}
+
+output "winxp_test_vmhost01_root_password" {
+    value = "${module.winxp_test_vmhost01.root_password}"
+    sensitive = true
+}
+
+module "winxp_test_vmhost02" {
+  source    = "./winxp-test-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost02
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+  admin_ssh_keys = var.admin_ssh_keys
+
+  memory = 8192
+  vcpu = 8
+  spawn = 4
+}
+
+output "winxp_test_vmhost02_root_password" {
+    value = "${module.winxp_test_vmhost02.root_password}"
+    sensitive = true
+}
+
+module "winxp_test_vmhost03" {
+  source    = "./winxp-test-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost03
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+  admin_ssh_keys = var.admin_ssh_keys
+
+  memory = 24576
+  vcpu = 24
+  spawn = 10
+}
+
+output "winxp_test_vmhost03_root_password" {
+    value = "${module.winxp_test_vmhost03.root_password}"
+    sensitive = true
+}
+
+
 module "winxp_test_vmhost04" {
   source    = "./winxp-test-agent-deploy/"
   providers = {
