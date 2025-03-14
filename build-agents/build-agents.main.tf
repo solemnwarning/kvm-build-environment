@@ -150,9 +150,10 @@ module "windows_build_vmhost03_a" {
   hostname_suffix = "-a"
   domain = "build.solemnwarning.net"
 
-  memory = 49152
-  vcpu   = 42
-  spawn  = 1
+  memory     = 49152
+  vcpu       = 42
+  spawn      = 1
+  extra_tags = "big=true"
 }
 
 module "windows_build_vmhost03_b" {
@@ -164,9 +165,10 @@ module "windows_build_vmhost03_b" {
   hostname_suffix = "-b"
   domain = "build.solemnwarning.net"
 
-  memory = 49152
-  vcpu   = 42
-  spawn  = 1
+  memory     = 49152
+  vcpu       = 42
+  spawn      = 1
+  extra_tags = "big=true"
 }
 
 module "windows_build_vmhost04_a" {
@@ -178,9 +180,10 @@ module "windows_build_vmhost04_a" {
   hostname_suffix = "-a"
   domain = "build.solemnwarning.net"
 
-  memory = 49152
-  vcpu   = 24
-  spawn  = 1
+  memory     = 49152
+  vcpu       = 24
+  spawn      = 1
+  extra_tags = "big=true"
 }
 
 module "windows_build_vmhost04_b" {
@@ -192,9 +195,10 @@ module "windows_build_vmhost04_b" {
   hostname_suffix = "-b"
   domain = "build.solemnwarning.net"
 
-  memory = 49152
-  vcpu   = 24
-  spawn  = 1
+  memory     = 49152
+  vcpu       = 24
+  spawn      = 1
+  extra_tags = "big=true"
 }
 
 resource "tls_private_key" "buildkite_user_ssh_key" {

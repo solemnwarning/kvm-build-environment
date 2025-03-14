@@ -55,6 +55,7 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
     templatefile("${ path.module }/windows-build-agent.user-data.tftpl", {
       hostname = "${ local.hostname }"
       spawn = var.spawn
+      extra_tags = var.extra_tags
       git_cache_https_cert = data.terraform_remote_state.build_infrastructure.outputs.git_cache_https_cert
       vcpkg_cache_https_cert = data.terraform_remote_state.build_infrastructure.outputs.vcpkg_cache_https_cert
   }), "\r", ""), "\n", "\r\n")

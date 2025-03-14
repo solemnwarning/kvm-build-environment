@@ -1,5 +1,5 @@
 SET BUILDKITE_AGENT_DISCONNECT_AFTER_IDLE_TIMEOUT=300
-rem SET BUILDKITE_AGENT_SPAWN=2
+SET BUILDKITE_AGENT_TAGS=queue=mingw-x86_64,queue=msvc-x86,queue=msvc-x64
 
 SET HTTP_PROXY=http://cache.lan.solemnwarning.net:8080
 SET HTTPS_PROXY=http://cache.lan.solemnwarning.net:8080
@@ -23,8 +23,19 @@ IF EXIST D:\user-data (
 	
 	ENDLOCAL
 	
+	SETLOCAL EnableDelayedExpansion
+	
 	rem The second line user-data specifies the number of agents to spawn
 	FOR /f "skip=1" %%G IN (D:\user-data) DO IF not defined BUILDKITE_AGENT_SPAWN SET "BUILDKITE_AGENT_SPAWN=%%G"
+	
+	rem ...and the third line has any extra agent tags
+	FOR /f "skip=2" %%G IN (D:\user-data) DO IF not defined BUILDKITE_EXTRA_TAGS SET "BUILDKITE_EXTRA_TAGS=%%G"
+	
+	IF NOT "!BUILDKITE_EXTRA_TAGS!" == "NONE" (
+		SET BUILDKITE_AGENT_TAGS=!BUILDKITE_AGENT_TAGS!,!BUILDKITE_EXTRA_TAGS!
+	)
+	
+	SET BUILDKITE_EXTRA_TAGS=
 	
 	rem Also we stash some certificates in it...
 	C:\msys64\usr\bin\awk "/^>>>/{f=0};f;/^>>> git-cache-https/{f=1}" D:\user-data > C:\buildkite-agent\git-cache-https.pem

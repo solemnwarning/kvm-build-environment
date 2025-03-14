@@ -23,3 +23,8 @@ variable "vcpu" {
 variable "spawn" {
   type = number
 }
+
+variable "extra_tags" {
+  type = string
+  default = "NONE"
+}

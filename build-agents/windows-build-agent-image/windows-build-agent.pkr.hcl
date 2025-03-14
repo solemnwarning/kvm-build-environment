@@ -130,7 +130,6 @@ build {
   provisioner "powershell" {
     environment_vars = [
       "buildkiteAgentToken=${var.buildkite_agent_token}",
-      "buildkiteAgentTags=queue=mingw-x86_64,queue=msvc-x86,queue=msvc-x64",
     ]
 
     inline = [
