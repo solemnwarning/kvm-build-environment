@@ -106,7 +106,7 @@ build {
 
       # Work around https://github.com/msys2/MINGW-packages/pull/12002
       "msys 'mkdir -p C:/msys64/mingw{32,64}/lib/luarocks/rocks-5.4/luafilesystem/1.8.0-1/{conf,lib}'",
-      "mingw64 'luarocks install luafilesystem'",
+      "mingw64 'luarocks install --force luafilesystem'",
 
       "mingw64 'luarocks install busted'",
     ]
