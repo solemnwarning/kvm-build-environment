@@ -25,6 +25,11 @@ variable "output_dir" {
 #   default = "https://aka.ms/vs/17/release/vs_buildtools.exe"
 # }
 
+variable "jq_exe_url" {
+  type    = string
+  default = "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-windows-amd64.exe"
+}
+
 build {
   sources = ["source.qemu.windows"]
 
@@ -107,6 +112,19 @@ build {
     ]
 
     timeout = "1h"
+  }
+
+  # Install jq.
+
+  provisioner "powershell" {
+    inline = [
+      "$ErrorActionPreference = 'Stop'",
+      "$ProgressPreference = 'SilentlyContinue';",
+
+      "Invoke-WebRequest -UseBasicParsing -uri '${ var.jq_exe_url }' -OutFile \"$($Env:SystemRoot)\\\\jq.exe\"",
+    ]
+
+    timeout = "5m"
   }
 
   # Git doesn't pick up on the "HTTP_CONFIG" environment variable set in the

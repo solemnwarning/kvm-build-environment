@@ -9,7 +9,7 @@ set PATH=%PATH%;C:\msys64\usr\bin
 set X_PARALLEL_JOBS=%NUMBER_OF_PROCESSORS%
 set VCPKG_BINARY_SOURCES=clear;http,https://vcpkg-cache.build.solemnwarning.net/{name}/{version}/{sha},readwrite
 
-FOR /F %%i IN ('buildkite-agent step get --format json agents') DO (
+FOR /F %%i IN ('buildkite-agent step get --format json agents ^| jq ".[]"') DO (
 	IF [%%i] == ["queue=mingw-x86_64"] (
 		ECHO Using 64-bit MinGW toolchain
 		
