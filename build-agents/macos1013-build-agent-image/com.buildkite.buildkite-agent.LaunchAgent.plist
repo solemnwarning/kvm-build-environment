@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>PATH</key>
+      <string>/usr/local/sbin:/usr/local/bin:/usr/sbin:/sbin:/usr/bin:/bin</string>
+    </dict>
+    <key>Label</key>
+    <string>com.buildkite.buildkite-agent</string>
+    <key>ProgramArguments</key>
+      <array>
+        <string>open</string>
+        <string>-a</string>
+        <string>/Applications/Utilities/Terminal.app</string>
+        <string>/usr/local/bin/buildkite-agent-wrapper</string>
+      </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <false/>
+    <key>LaunchOnlyOnce</key>
+    <true/>
+  </dict>
+</plist>
