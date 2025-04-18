@@ -242,7 +242,8 @@ source qemu "macos" {
   ssh_username = "packer"
   ssh_password = "packer"
 
-  shutdown_command = "sudo shutdown -h now"
+  # Disable the packer user prior to shutting down.
+  shutdown_command = "sudo pwpolicy -u packer disableuser && sudo shutdown -h now"
   shutdown_timeout = "30m"
 
   # Builds a compact image

@@ -37,6 +37,8 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
     domain   = "${ var.domain }"
 
     http_proxy_url        = "${ var.http_proxy_url }"
+    admin_username        = "${ var.admin_username }"
+    admin_ssh_keys        = "${ var.admin_ssh_keys }"
     buildkite_agent_token = "${ var.buildkite_agent_token }"
   })
 }
