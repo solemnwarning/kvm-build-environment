@@ -9,7 +9,7 @@ packer {
 
 variable "base_dir" {
   type    = string
-  default = "../macos-10.13-qemu-packer/base/"
+  default = "base/"
 }
 
 variable "output_dir" {
@@ -35,17 +35,6 @@ locals {
 
 build {
   sources = ["source.qemu.macos"]
-
-  # We need to explicitly enable TRIM support since we aren't using official Apple-approved disks.
-
-  provisioner "shell" {
-    inline = [
-      "yes | sudo trimforce enable",
-    ]
-
-    expect_disconnect = true
-    pause_after = "2m"
-  }
 
   # Download and install pre-compiled yq executable.
 
@@ -74,7 +63,7 @@ build {
 
   provisioner "file" {
     sources = [
-      "../macos-init",
+      "macos-init",
       "macos-init.conf",
     ]
 
@@ -93,7 +82,7 @@ build {
     ]
   }
 
-  # Download and install Xcode command line tools (for git)
+  # Download and install Xcode command line tools
 
   provisioner "shell-local" {
     inline = [
@@ -127,7 +116,7 @@ build {
       "99-buildkite-configure",
       "buildkite-agent.cfg.in",
       "buildkite-agent.sudoers",
-      "buildkite-agent-wrapper",
+      "buildkite-agent-run",
       "com.apple.SetupAssistant.plist",
       "com.buildkite.buildkite-agent.LaunchAgent.plist",
       "kcpassword",
@@ -151,7 +140,7 @@ build {
       "sudo mkdir -p /etc/buildkite-agent/hooks/",
       "sudo install -m 0644 /tmp/buildkite-agent.cfg.in /etc/buildkite-agent/",
 
-      "sudo install -m 0755 /tmp/buildkite-agent-wrapper /usr/local/bin/",
+      "sudo install -m 0755 /tmp/buildkite-agent-run /usr/local/bin/",
 
       "sudo install -m 0755 /tmp/99-buildkite-configure /usr/local/share/macos-init/scripts/",
       "sudo install -m 0600 /tmp/buildkite-agent.sudoers /etc/sudoers.d/buildkite-agent",
@@ -177,11 +166,20 @@ build {
       "rm -f /tmp/99-buildkite-configure",
       "rm -f /tmp/buildkite-agent.cfg.in",
       "rm -f /tmp/buildkite-agent.sudoers",
-      "rm -f /tmp/buildkite-agent-wrapper",
+      "rm -f /tmp/buildkite-agent-run",
       "rm -f /tmp/com.apple.SetupAssistant.plist",
       "rm -f /tmp/com.buildkite.buildkite-agent.LaunchAgent.plist",
       "rm -f /tmp/kcpassword",
       "rm -f /tmp/${ local.buildkite_tar }",
+    ]
+  }
+
+  # Delete the network configuration so that the interface in the final VM gets assigned to em0,
+  # otherwise it won't be brought up by default.
+  provisioner "shell" {
+    inline = [
+      "sudo rm /Library/Preferences/SystemConfiguration/NetworkInterfaces.plist",
+      "sudo rm /Library/Preferences/SystemConfiguration/preferences.plist",
     ]
   }
 
@@ -228,13 +226,16 @@ source qemu "macos" {
     [ "-device", "usb-kbd" ],
     [ "-device", "usb-tablet" ],
 
-    [ "-device", "ahci,id=ahci" ],
+    # We give the SATA (AHCI) controller the same PCIe bus address and assign the disks to the same
+    # ports as OSX-KVM does so that the boot parameters remain valid.
 
-    [ "-drive", "if=none,id=disk0,format=qcow2,file=${var.base_dir}/OpenCore.qcow2" ],
-    [ "-device", "ide-hd,drive=disk0,bus=ahci.0,rotation_rate=1" ],
+    [ "-device", "ahci,id=ahci,bus=pcie.0,addr=4" ],
 
-    [ "-drive", "if=none,id=disk1,format=qcow2,file=${var.output_dir}/macos.qcow2,cache=unsafe,discard=unmap,detect-zeroes=unmap" ],
-    [ "-device", "ide-hd,drive=disk1,bus=ahci.1,rotation_rate=1" ],
+    [ "-drive", "if=none,id=disk2,format=qcow2,file=${var.base_dir}/OpenCore.qcow2" ],
+    [ "-device", "ide-hd,drive=disk2,bus=ahci.2,rotation_rate=1" ],
+
+    [ "-drive", "if=none,id=disk4,format=qcow2,file=${var.output_dir}/macos.qcow2,cache=unsafe,discard=unmap,detect-zeroes=unmap" ],
+    [ "-device", "ide-hd,drive=disk4,bus=ahci.4,rotation_rate=1" ],
 
     [ "-drive", "if=pflash,format=raw,readonly=true,file=${var.uefi_firmware}" ],
     [ "-drive", "if=pflash,format=raw,readonly=true,file=${var.base_dir}/OVMF_VARS.fd" ],
@@ -250,7 +251,8 @@ source qemu "macos" {
   ssh_username = "packer"
   ssh_password = "packer"
 
-  shutdown_command = "sudo shutdown -h now"
+  # Disable the packer user prior to shutting down.
+  shutdown_command = "sudo pwpolicy -u packer disableuser && sudo shutdown -h now"
   shutdown_timeout = "30m"
 
   # Builds a compact image

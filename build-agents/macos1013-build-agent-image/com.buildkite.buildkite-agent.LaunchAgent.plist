@@ -14,7 +14,7 @@
         <string>open</string>
         <string>-a</string>
         <string>/Applications/Utilities/Terminal.app</string>
-        <string>/usr/local/bin/buildkite-agent-wrapper</string>
+        <string>/usr/local/bin/buildkite-agent-run</string>
       </array>
     <key>RunAtLoad</key>
     <true/>

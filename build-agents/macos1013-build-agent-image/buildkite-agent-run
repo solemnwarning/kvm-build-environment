@@ -17,6 +17,8 @@ do
 	sleep 1
 done
 
+. /etc/buildkite-agent/buildkite-agent.env
+
 buildkite-agent start
 
 if [ -z "$caught_sigint" ]

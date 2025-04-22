@@ -7,3 +7,6 @@
 [submodule "build-agents/macos14-build-agent-image/macos-init"]
 	path = build-agents/macos14-build-agent-image/macos-init
 	url = https://github.com/solemnwarning/macos-init.git
+[submodule "build-agents/macos1013-build-agent-image/macos-init"]
+	path = build-agents/macos1013-build-agent-image/macos-init
+	url = https://github.com/solemnwarning/macos-init.git

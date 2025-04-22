@@ -20,4 +20,18 @@ sed \
 	< /etc/buildkite-agent/buildkite-agent.cfg.in \
 	> /etc/buildkite-agent/buildkite-agent.cfg
 
+cat << EOF > /etc/buildkite-agent/buildkite-agent.env
+if [ -n "$http_proxy" ]
+then
+	export http_proxy="$http_proxy"
+	export HTTP_PROXY="$http_proxy"
+fi
+
+if [ -n "$https_proxy" ]
+then
+	export https_proxy="$https_proxy"
+	export HTTPS_PROXY="$https_proxy"
+fi
+EOF
+
 touch /tmp/buildkite-configured
