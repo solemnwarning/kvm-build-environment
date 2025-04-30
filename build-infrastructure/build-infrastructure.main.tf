@@ -8,7 +8,8 @@ terraform {
 
 provider "libvirt" {
   alias = "vmhost01"
-  uri = "qemu+ssh://root@vmhost01.lan.solemnwarning.net/system?sshauth=privkey"
+  # uri = "qemu+ssh://root@vmhost01.lan.solemnwarning.net/system?sshauth=privkey"
+  uri = "qemu:///system"
 }
 
 # module "snappass" {

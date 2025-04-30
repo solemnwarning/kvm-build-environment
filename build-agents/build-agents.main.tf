@@ -8,7 +8,8 @@ terraform {
 
 provider "libvirt" {
   alias = "vmhost01"
-  uri = "qemu+ssh://root@vmhost01.lan.solemnwarning.net/system?sshauth=privkey"
+  # uri = "qemu+ssh://root@vmhost01.lan.solemnwarning.net/system?sshauth=privkey"
+  uri = "qemu:///system"
 }
 
 provider "libvirt" {
@@ -23,8 +24,7 @@ provider "libvirt" {
 
 provider "libvirt" {
   alias = "vmhost04"
-  # uri = "qemu+ssh://root@vmhost04.lan.solemnwarning.net/system?sshauth=privkey"
-  uri = "qemu:///system"
+  uri = "qemu+ssh://root@vmhost04.lan.solemnwarning.net/system?sshauth=privkey"
 }
 
 module "ipxwrapper_test_vmhost01" {
