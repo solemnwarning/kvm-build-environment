@@ -1,13 +1,34 @@
 #!/bin/bash
 
-set -e
+set -eo pipefail
 
-cd "$(dirname $0)"
+if [ "$#" -eq 1 ] && [ "$1" = "-q" ]
+then
+	quiet=yes
+elif [ "$#" -eq 0 ]
+then
+	quiet=
+else
+	echo "Usage: $0 [-q]" 1>&2
+	exit 64 # EX_USAGE
+fi
+
+cd "$(dirname "$0")/"
 
 timestamp=$(date --utc '+%Y-%m-%dT%H:%M:%SZ')
+log=$(mktemp)
 
 packer init  -var "output_dir=builds/${timestamp}" debian-build-agent.pkr.hcl
-packer build -var "output_dir=builds/${timestamp}" debian-build-agent.pkr.hcl
 
-ln -snfv "${timestamp}" "builds/latest"
+if [ -n "$quiet" ]
+then
+	packer build -timestamp-ui -var "output_dir=builds/${timestamp}" debian-build-agent.pkr.hcl > "${log}" 2>&1 \
+		|| (status=$?; cat "${log}"; rm -f "${log}"; exit $status)
+else
+	packer build -timestamp-ui -var "output_dir=builds/${timestamp}" debian-build-agent.pkr.hcl |& tee "${log}"
+fi
+
+mv "${log}" "builds/${timestamp}/build.log"
+
+ln -snf "${timestamp}" "builds/latest"
 echo "${timestamp}" > "builds/latest-version"
