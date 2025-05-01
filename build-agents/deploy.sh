@@ -20,8 +20,10 @@ terraform validate
 
 powerwake vmhost02.lan.solemnwarning.net
 powerwake vmhost03.lan.solemnwarning.net
+powerwake vmhost04.lan.solemnwarning.net
 
 powerwake -w -t 300 vmhost02.lan.solemnwarning.net
 powerwake -w -t 300 vmhost03.lan.solemnwarning.net
+powerwake -w -t 300 vmhost04.lan.solemnwarning.net
 
 terraform apply $auto_approve

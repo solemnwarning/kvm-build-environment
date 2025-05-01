@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOST="root@vmhost04.lan.solemnwarning.net"
+HOST="root@vmhost01.lan.solemnwarning.net"
 DIR="/mnt/vmbuild/kvm-build-environment"
 
 set -e
