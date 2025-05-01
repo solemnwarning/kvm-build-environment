@@ -4,7 +4,7 @@ variable "storage_pool" {
 }
 
 variable "hostname_suffix" {
-  type = string
+  type    = string
   default = ""
 }
 

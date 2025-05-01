@@ -11,18 +11,18 @@ resource "random_id" "suffix" {
 }
 
 locals {
-  hostname = "macos14-build${ var.hostname_suffix }-${ random_id.suffix.hex }"
+  hostname = "macos1013-build${ var.hostname_suffix }-${ random_id.suffix.hex }"
 }
 
 data "local_file" "image_version" {
-  filename = "${ path.root }/macos14-build-agent-image/builds/latest-version"
+  filename = "${ path.root }/macos1013-build-agent-image/builds/latest-version"
 }
 
 locals {
   image_version = chomp(data.local_file.image_version.content)
-  image_path    = "${ path.root }/macos14-build-agent-image/builds/${ local.image_version }/macos.qcow2"
-  opencore_path = "${ path.root }/macos14-build-agent-image/builds/${ local.image_version }/OpenCore.qcow2"
-  vars_path     = "${ path.root }/macos14-build-agent-image/builds/${ local.image_version }/OVMF_VARS.fd"
+  image_path    = "${ path.root }/macos1013-build-agent-image/builds/${ local.image_version }/macos.qcow2"
+  opencore_path = "${ path.root }/macos1013-build-agent-image/builds/${ local.image_version }/OpenCore.qcow2"
+  vars_path     = "${ path.root }/macos1013-build-agent-image/builds/${ local.image_version }/OVMF_VARS.fd"
 }
 
 resource "libvirt_volume" "hdd" {
@@ -54,7 +54,7 @@ resource "libvirt_volume" "efi_vars" {
 resource "libvirt_cloudinit_disk" "cloud_init" {
   name   = "${ local.hostname }.${ var.domain }_cloud-init.iso"
 
-  user_data  = templatefile("${ path.module }/macos14-build-agent-deploy.user-data.tftpl", {
+  user_data  = templatefile("${ path.module }/macos1013-build-agent-deploy.user-data.tftpl", {
     hostname = "${ local.hostname }"
     domain   = "${ var.domain }"
 
@@ -75,7 +75,7 @@ resource "libvirt_domain" "macos" {
   # libvirt Terraform provider, but it does allow us to transform the generated
   # domain XML using XSLT (see macos.domain.xsl for more details).
   xml {
-    xslt = file("${ path.module }/macos14-build-agent-deploy.domain.xsl")
+    xslt = file("${ path.module }/macos1013-build-agent-deploy.domain.xsl")
   }
 
   firmware = "/usr/share/OVMF/OVMF_CODE.fd"
@@ -84,6 +84,9 @@ resource "libvirt_domain" "macos" {
   }
 
   network_interface {
+    # Put your bridge interface name here, or use a different type of network
+    # interface (see the documentation for the libvirt Terraform provider) for
+    # more information.
     bridge = "dmz-build"
   }
 
