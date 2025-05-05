@@ -4,3 +4,9 @@
 [submodule "build-agents/windows-build-agent-image/packer-Win2022"]
 	path = build-agents/windows-build-agent-image/packer-Win2022
 	url = https://github.com/eaksel/packer-Win2022.git
+[submodule "build-agents/macos14-build-agent-image/macos-init"]
+	path = build-agents/macos14-build-agent-image/macos-init
+	url = https://github.com/solemnwarning/macos-init.git
+[submodule "build-agents/macos1013-build-agent-image/macos-init"]
+	path = build-agents/macos1013-build-agent-image/macos-init
+	url = https://github.com/solemnwarning/macos-init.git

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [ "$(id -nu)" != "buildkite-agent" ]
+then
+	echo "Not running as buildkite-agent user - exiting"
+	exit 0
+fi
+
+caught_sigint=
+trap 'caught_sigint=1' SIGINT
+
+echo "Waiting for /tmp/buildkite-configured file..."
+while [ ! -e "/tmp/buildkite-configured" ]
+do
+	sleep 1
+done
+
+. /etc/buildkite-agent/buildkite-agent.env
+
+buildkite-agent start
+
+if [ -z "$caught_sigint" ]
+then
+	sudo /sbin/shutdown -h now
+else
+	echo "Caught SIGINT - not shutting down the system"
+fi

@@ -10,6 +10,9 @@ admin_ssh_keys = [
   "ssh-rsa ...",
 ]
 
+# Name of admin user to create on macOS build agents.
+macos_admin_username = "..."
+
 # Fedora COPR credentials
 copr_config = <<-EOT
 [copr-cli]

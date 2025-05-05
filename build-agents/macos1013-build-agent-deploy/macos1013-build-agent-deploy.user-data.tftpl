@@ -1,0 +1,16 @@
+#cloud-config
+hostname: ${hostname}
+fqdn: ${hostname}.${domain}
+
+users:
+  - name: ${ admin_username }
+    ssh_authorized_keys:
+      %{ for key in admin_ssh_keys ~}
+      - ${ key }
+      %{ endfor ~}
+
+buildkite-agent-token: ${buildkite_agent_token}
+buildkite-agent-spawn: 1
+
+http-proxy:  ${http_proxy_url}
+https-proxy: ${http_proxy_url}
