@@ -30,6 +30,11 @@ variable "jq_exe_url" {
   default = "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-windows-amd64.exe"
 }
 
+variable "nsis_installer_url" {
+  type    = string
+  default = "https://downloads.sourceforge.net/project/nsis/NSIS%203/3.11/nsis-3.11-setup.exe"
+}
+
 build {
   sources = ["source.qemu.windows"]
 
@@ -182,6 +187,17 @@ build {
   provisioner "file" {
     source      = "buildkite-agent-run.bat"
     destination = "C:\\buildkite-agent\\buildkite-agent-run.bat"
+  }
+
+  # Download and install NSIS
+  provisioner "powershell" {
+    inline = [
+      # Spoof a wget User-Agent header so SourceForge doesn't serve the fucking
+      # download-and-look-at-our-ads page in place of the actual file.
+      "Invoke-WebRequest -Uri '${var.nsis_installer_url}' -OutFile 'nsis-setup.exe' -UserAgent 'Wget/1.0'",
+      ".\\nsis-setup.exe /S",
+      "Remove-Item nsis-setup.exe",
+    ]
   }
 
   # Update the stored password used for auto logon at the console.

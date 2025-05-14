@@ -28,7 +28,7 @@ rem If MSYSTEM has been set in the environment, then we are running a job for a
 rem MinGW queue and should pipe the commands into bash.
 
 IF NOT "%MSYSTEM%" == "" (
-	C:\msys64\usr\bin\bash.exe -lec "cd \"$1\" && bash -xe <<< $BUILDKITE_COMMAND" -- "/%subst_letter%/"
+	C:\msys64\usr\bin\bash.exe -lec "cd \"$1\" && PATH=\"${PATH}${2}\" bash -xe <<< $BUILDKITE_COMMAND" -- "/%subst_letter%/" "%MSYS_APPEND_PATH%"
 	EXIT !ERRORLEVEL!
 )
 

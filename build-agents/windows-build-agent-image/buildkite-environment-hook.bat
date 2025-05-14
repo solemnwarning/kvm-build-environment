@@ -6,6 +6,10 @@ set BUILDKITE_NO_LOCAL_HOOKS=true
 rem Add MSYS to PATH so buildkite-agent can find its Git.
 set PATH=%PATH%;C:\msys64\usr\bin
 
+rem Add extra tools needed by some build jobs to the PATH
+set PATH=%PATH%;C:\Program Files (x86)\NSIS\Bin
+set MSYS_APPEND_PATH=:/c/buildkite-agent/bin:/c/Program Files (x86)/NSIS/Bin
+
 set X_PARALLEL_JOBS=%NUMBER_OF_PROCESSORS%
 set VCPKG_BINARY_SOURCES=clear;http,https://vcpkg-cache.build.solemnwarning.net/{name}/{version}/{sha},readwrite
 
