@@ -42,5 +42,4 @@ Scaling back down is accomplished using [powernap](https://github.com/solemnwarn
 * Automatic deletion of old images
 * Scheduled (re)building of images
 * Deploy secrets to Windows from Terraform rather than baking into images
-* Run Windows Buildkite agent as a restricted user
 * Refactor FreeBSD init script to use standard rc functions

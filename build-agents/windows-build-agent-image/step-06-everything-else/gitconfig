@@ -1,0 +1,14 @@
+
+[http "https://git-cache.build.solemnwarning.net/"]
+	; Connect directly to the Git cache server.
+	proxy =
+	
+	; Use schannel for the Git cache server since its self-signed
+	; certificate has been added to the system trust store. We don't use
+	; it globally because it hangs for a minute or so on every connect
+	; to external sites (failing OCSP lookup?) when running within the
+	; build network.
+	sslBackend = schannel
+
+[url "https://git-cache.build.solemnwarning.net/vcpkg.git"]
+	insteadOf = https://github.com/microsoft/vcpkg.git

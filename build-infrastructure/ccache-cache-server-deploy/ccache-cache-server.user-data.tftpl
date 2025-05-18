@@ -1,0 +1,42 @@
+#cloud-config
+hostname: ${ hostname }
+fqdn: ${ hostname }.${ domain }
+
+timezone: "Europe/London"
+
+users:
+  - name: root
+    lock_passwd: false
+    hashed_passwd: ${root_password.bcrypt_hash}
+    # plain_text_passwd: root
+    ssh_authorized_keys:
+      %{ for key in admin_ssh_keys ~}
+      - ${ key }
+      %{ endfor ~}
+
+ssh_keys:
+  ecdsa_private: |
+    ${ indent(4, ssh_host_ecdsa.private_key_pem) }
+  ed25519_private: |
+    ${ indent(4, ssh_host_ed25519.private_key_openssh) }
+  rsa_private: |
+    ${ indent(4, ssh_host_rsa.private_key_pem) }
+
+ssh_genkeytypes: [rsa, ecdsa, ed25519]
+ssh_quiet_keygen: true
+ssh_publish_hostkeys:
+  enabled: true
+  blacklist: [dsa]
+
+bootcmd:
+  - cat > /etc/ssl/certs/ccache-cache-https-server.pem <<'EOF'
+  - ${ replace(chomp(https_server_cert.cert_pem), "\n", "\n  - ") }
+  - EOF
+
+  - cat > /etc/ssl/private/ccache-cache-https-server.key <<'EOF'
+  - ${ replace(chomp(https_server_key.private_key_pem), "\n", "\n  - ") }
+  - EOF
+
+  - cat > /etc/ssl/certs/ccache-cache-https-auth-ca.pem <<'EOF'
+  - ${ replace(chomp(https_auth_ca_cert.cert_pem), "\n", "\n  - ") }
+  - EOF

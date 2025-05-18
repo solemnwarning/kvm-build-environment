@@ -106,3 +106,37 @@ resource "local_file" "git_cache_https_cert" {
 
     content = "${module.git_cache.https_cert}"
 }
+
+module "ccache_cache" {
+  source    = "./ccache-cache-server-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost01
+  }
+
+  hostname = "ccache-cache"
+  domain = "build.solemnwarning.net"
+
+  ip_and_prefix = "172.24.134.8/26"
+  gateway = "172.24.134.1"
+  dns_server = "172.24.128.1"
+
+  admin_ssh_keys = var.admin_ssh_keys
+}
+
+output "ccache_cache_root_password" {
+    value = "${module.ccache_cache.root_password}"
+    sensitive = true
+}
+
+output "ccache_cache_https_cert" {
+    value = "${module.ccache_cache.https_server_cert}"
+}
+
+output "ccache_cache_https_auth_ca_cert" {
+    value = "${module.ccache_cache.https_auth_ca_cert}"
+}
+
+output "ccache_cache_https_auth_ca_key" {
+    value = "${module.ccache_cache.https_auth_ca_key}"
+    sensitive = true
+}

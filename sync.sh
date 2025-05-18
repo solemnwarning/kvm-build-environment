@@ -8,4 +8,4 @@ set -e
 cd "$(dirname "$0")"
 
 find -name .gitignore -exec perl exclude-gitignore.pl {} \; \
-	| xargs rsync -tpr --delete -e ssh . "$HOST:$DIR"
+	| xargs rsync -cprl --delete -e ssh . "$HOST:$DIR"

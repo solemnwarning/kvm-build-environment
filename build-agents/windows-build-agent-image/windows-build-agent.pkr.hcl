@@ -35,6 +35,11 @@ variable "nsis_installer_url" {
   default = "https://downloads.sourceforge.net/project/nsis/NSIS%203/3.11/nsis-3.11-setup.exe"
 }
 
+variable "stunnel_installer_url" {
+  type    = string
+  default = "https://www.stunnel.org/downloads/stunnel-latest-win64-installer.exe"
+}
+
 build {
   sources = ["source.qemu.windows"]
 
@@ -132,6 +137,48 @@ build {
     timeout = "5m"
   }
 
+  # Install ccache.
+
+  provisioner "powershell" {
+    script = "ccache.ps1"
+    timeout = "5m"
+  }
+
+  # Install stunnel.
+
+  provisioner "powershell" {
+    inline = [
+      "$ErrorActionPreference = 'Stop'",
+      "$ProgressPreference = 'SilentlyContinue';",
+
+      "Invoke-WebRequest -UseBasicParsing -uri '${ var.stunnel_installer_url }' -OutFile \"stunnel-setup.exe\"",
+
+      "$p = Start-Process 'stunnel-setup.exe' -ArgumentList '/S' -PassThru -Wait",
+      "if($p.ExitCode -ne 0) { Write-Error -Message \"Failed to install stunnel (exit code $($p.ExitCode.ToString()))\" }",
+
+      "Remove-Item stunnel-setup.exe",
+    ]
+
+    timeout = "5m"
+  }
+
+  provisioner "file" {
+    source      = "stunnel.conf"
+    destination = "C:\\Program Files (x86)\\stunnel\\config\\stunnel.conf"
+  }
+
+  provisioner "powershell" {
+    inline = [
+      "$ErrorActionPreference = 'Stop'",
+      "$ProgressPreference = 'SilentlyContinue';",
+
+      "$p = Start-Process 'C:\\Program Files (x86)\\stunnel\\bin\\stunnel.exe' -ArgumentList '-install', '-quiet' -WorkingDirectory 'C:\\Program Files (x86)\\stunnel\\config' -PassThru -Wait",
+      "if($p.ExitCode -ne 0) { Write-Error -Message \"Failed to register stunnel service (exit code $($p.ExitCode.ToString()))\" }",
+    ]
+
+    timeout = "5m"
+  }
+
   # Git doesn't pick up on the "HTTP_CONFIG" environment variable set in the
   # buildkite-agent environment, and there doesn't appear to be a way to set
   # "http_proxy" (lowercase) from batch, because environment variables on
@@ -195,7 +242,10 @@ build {
       # Spoof a wget User-Agent header so SourceForge doesn't serve the fucking
       # download-and-look-at-our-ads page in place of the actual file.
       "Invoke-WebRequest -Uri '${var.nsis_installer_url}' -OutFile 'nsis-setup.exe' -UserAgent 'Wget/1.0'",
-      ".\\nsis-setup.exe /S",
+
+      "$p = Start-Process 'nsis-setup.exe' -ArgumentList '/S' -PassThru -Wait",
+      "if($p.ExitCode -ne 0) { Write-Error -Message \"Failed to install NSIS (exit code $($p.ExitCode.ToString()))\" }",
+
       "Remove-Item nsis-setup.exe",
     ]
   }
