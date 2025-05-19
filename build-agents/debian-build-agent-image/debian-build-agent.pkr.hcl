@@ -35,6 +35,9 @@ build {
       "buildkite-agent.known_hosts",
       "buildkite-environment-hook",
       "powernapd.conf",
+      "sbuild.conf",
+      "schroot-sbuild-fstab.patch",
+      "stunnel.conf",
     ]
 
     destination = "/tmp/"
@@ -74,12 +77,24 @@ build {
       "apt-get -y update",
       "apt-get -y install build-essential dpkg-dev sbuild schroot debootstrap git-buildpackage debhelper dh-lua dh-python gem2deb python3-setuptools",
 
+      "install -m 0644 /tmp/sbuild.conf /etc/sbuild/sbuild.conf",
+
       "sbuild-adduser buildkite-agent",
 
       "rm -f /etc/apt/apt.conf.d/proxy.conf",
 
       # Use tmpfs for schroot overlays (build stuff in tmpfs)
       "echo 'none  /var/lib/schroot/union/overlay  tmpfs  size=75%  0  0' >> /etc/fstab",
+      "(cd /etc/schroot/sbuild/ && patch -N -i /tmp/schroot-sbuild-fstab.patch)",
+
+      # Install stunnel to handle TLS encryption and mutual authentication for ccache.
+
+      "apt-get -y update",
+      "apt-get -y install stunnel4",
+
+      "install -m 0644 /tmp/stunnel.conf /etc/stunnel/stunnel.conf",
+
+      "systemctl enable stunnel4.service",
 
       # Install powernap
 

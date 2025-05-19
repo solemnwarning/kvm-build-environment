@@ -6,6 +6,14 @@ terraform {
   }
 }
 
+data "terraform_remote_state" "build_infrastructure" {
+  backend = "local"
+
+  config = {
+    path = "${abspath(path.root)}/../build-infrastructure/terraform.tfstate"
+  }
+}
+
 resource "random_id" "suffix" {
   byte_length = 4
 }
@@ -52,6 +60,34 @@ locals {
   image_path    = "${ path.root }/debian-build-agent-image/builds/${ local.image_version }/debian-build-agent.qcow2"
 }
 
+resource "tls_private_key" "ccache_client_key" {
+  algorithm = "RSA"
+  rsa_bits = 3072
+}
+
+resource "tls_cert_request" "ccache_client_csr" {
+  private_key_pem = tls_private_key.ccache_client_key.private_key_pem
+
+  subject {
+    common_name = "${ local.hostname }.${ var.domain }"
+  }
+}
+
+resource "tls_locally_signed_cert" "ccache_client_cert" {
+  cert_request_pem   = tls_cert_request.ccache_client_csr.cert_request_pem
+  ca_cert_pem        = data.terraform_remote_state.build_infrastructure.outputs.ccache_cache_https_auth_ca_cert
+  ca_private_key_pem = data.terraform_remote_state.build_infrastructure.outputs.ccache_cache_https_auth_ca_key
+
+  validity_period_hours = 17520  # 2 years
+  early_renewal_hours   = 4380   # 6 months
+
+  allowed_uses = [
+    "key_encipherment",
+    "digital_signature",
+    "client_auth",
+  ]
+}
+
 resource "libvirt_volume" "root" {
   name   = "${ local.hostname }.${ var.domain }_root.qcow2"
   pool   = var.storage_pool
@@ -86,6 +122,10 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
     http_proxy_url         = var.http_proxy_url
     admin_ssh_keys         = var.admin_ssh_keys
     buildkite_user_ssh_key = var.buildkite_user_ssh_key
+
+    ccache_cache_https_cert  = data.terraform_remote_state.build_infrastructure.outputs.ccache_cache_https_cert
+    ccache_cache_client_cert = tls_locally_signed_cert.ccache_client_cert.cert_pem
+    ccache_cache_client_key  = tls_private_key.ccache_client_key.private_key_pem
   })
 }
 

@@ -1,0 +1,10 @@
+--- fstab.orig	2025-05-19 01:39:32.073995593 +0100
++++ fstab	2025-05-19 01:40:54.091533467 +0100
+@@ -7,6 +7,4 @@
+ /sys            /sys            none    rw,bind         0       0
+ /dev/pts        /dev/pts        none    rw,bind         0       0
+ tmpfs           /dev/shm        tmpfs   defaults        0       0
+-# Mount a large scratch space for the build, so we don't use up
+-# space on an LVM snapshot of the chroot itself.
+-/var/lib/sbuild/build  /build   none    rw,bind         0       0
++tmpfs           /build          tmpfs   size=75%        0       0

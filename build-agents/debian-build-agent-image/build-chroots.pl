@@ -13,6 +13,7 @@ STDOUT->autoflush(1);
 STDERR->autoflush(1);
 
 my %procs = ();
+my @names = ();
 
 sub create
 {
@@ -24,13 +25,15 @@ sub create
 	# open3() throws on failure
 	my $pid = open3($null, my $stdout, my $stderr = gensym,
 		# "auto-apt-proxy", "sbuild-createchroot", "--arch=$arch", "$suite", "/srv/chroot/$name/", "$mirror", "--include=auto-apt-proxy", @extra);
-		"sbuild-createchroot", "--arch=$arch", "$suite", "/srv/chroot/$name/", "$mirror", @extra);
+		"sbuild-createchroot", "--arch=$arch", "$suite", "/srv/chroot/$name/", "$mirror", "--include=ccache", @extra);
 	
 	$procs{$pid} = {
 		name   => $name,
 		stdout => $stdout,
 		stderr => $stderr,
 	};
+	
+	push(@names, $name);
 }
 
 create("bullseye-i386-sbuild",  "i386",  "bullseye", "http://deb.debian.org/debian/");
@@ -100,6 +103,14 @@ while(%procs)
 			}
 		}
 	}
+}
+
+# Ensure ccache symlinks are created for all compilers.
+# (see https://bugs.debian.org/632779)
+
+foreach my $name(@names)
+{
+	system("schroot", "-u", "root", "-c", "source:${name}", "update-ccache-symlinks") and die;
 }
 
 # Make a -buildkite variant of each -sbuild chroot, which is basically the same

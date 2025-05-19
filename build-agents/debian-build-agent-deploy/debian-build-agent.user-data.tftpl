@@ -47,6 +47,26 @@ bootcmd:
   # Inject Buildkite agent token
   - sed -i -e 's/BUILDKITE_AGENT_TOKEN/${buildkite_agent_token}/g' /etc/buildkite-agent/buildkite-agent.cfg
 
+  # Install SSL certificates/keys used by stunnel.
+
+  - cat > /etc/ssl/certs/ccache-cache.build.solemnwarning.net.crt <<'EOF'
+  - ${ replace(ccache_cache_https_cert, "\n", "\n  - ") }
+  - EOF
+
+  - cat > /etc/stunnel/ccache-cache.client.crt <<'EOF'
+  - ${ replace(ccache_cache_client_cert, "\n", "\n  - ") }
+  - EOF
+
+  - umask 077
+  - cat > /etc/stunnel/ccache-cache.client.key <<'EOF'
+  - ${ replace(ccache_cache_client_key, "\n", "\n  - ") }
+  - EOF
+
+  - if systemctl is-active stunnel4.service --quiet || systemctl is-failed stunnel4.service --quiet
+  - then
+  -   systemctl restart stunnel4.service
+  - fi
+
 runcmd:
   # Force DHCP release so our (new) hostname gets inserted into DNS
   # https://serverfault.com/a/970459
