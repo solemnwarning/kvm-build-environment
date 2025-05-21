@@ -1,0 +1,29 @@
+#!/usr/local/bin/bash
+
+set -e
+
+RUNFILE="/var/run/idle-check-counter"
+SHUTDOWN_AFTER=5
+
+if [ -e "$RUNFILE" ]
+then
+	current_count="$(cat "$RUNFILE")"
+else
+	current_count=0
+fi
+
+# Check if the buildkite-agent process is running or any user is logged in.
+if /usr/local/etc/rc.d/buildkite status > /dev/null || [ -n "$(w -hn)" ]
+then
+	echo 0 > "$RUNFILE"
+else
+	current_count=$((current_count + 1))
+	
+	if [ "$current_count" -ge "$SHUTDOWN_AFTER" ]
+	then
+		echo 0 > "$RUNFILE"
+		shutdown -p now
+	else
+		echo "$current_count" > "$RUNFILE"
+	fi
+fi

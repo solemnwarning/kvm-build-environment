@@ -1,0 +1,12 @@
+--- buildkite.orig	2025-05-19 18:23:22.436481000 +0100
++++ buildkite	2025-05-19 18:24:56.717116000 +0100
+@@ -36,7 +36,8 @@
+ command=/usr/sbin/daemon
+ command_args="-t ${name} \
+     -u ${buildkite_account} \
+-    -r -P ${pidfile} \
++    -P ${pidfile} \
++    -f -o ${buildkite_logfile} \
+     /usr/bin/env ${buildkite_vars} \
+       HOME=`pw usershow ${buildkite_account} | cut -d: -f9` \
+       BUILDKITE_AGENT_TOKEN=${buildkite_token} \

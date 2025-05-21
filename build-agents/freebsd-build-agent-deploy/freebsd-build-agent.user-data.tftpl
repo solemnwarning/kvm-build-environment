@@ -28,19 +28,19 @@ ssh_publish_hostkeys:
   blacklist: [dsa]
 
 bootcmd:
-  # Inject HTTP proxy into the buildkite-agent environment
-  - cat > /usr/local/bin/buildkite-agent-wrapper <<'EOF'
-  - #!/bin/sh
-  - export http_proxy=${http_proxy_url}
-  - export https_proxy=${http_proxy_url}
-  - buildkite-agent "$@"
-  - exit $?
+  - cat > /var/run/buildkite-agent.env <<'EOF'
+  - BUILDKITE_AGENT_DISCONNECT_AFTER_IDLE_TIMEOUT=300
+  - http_proxy=${http_proxy_url}
+  - https_proxy=${http_proxy_url}
+  - HTTP_PROXY=${http_proxy_url}
+  - HTTPS_PROXY=${http_proxy_url}
   - EOF
-  - chmod 0755 /usr/local/bin/buildkite-agent-wrapper
-  - sed -i -e 's/buildkite-agent start/buildkite-agent-wrapper start/g' /usr/local/etc/rc.d/buildkite-agent
 
-  # Inject Buildkite agent token
-  - sed -i -e 's/BUILDKITE_AGENT_TOKEN/${buildkite_agent_token}/g' /usr/local/etc/buildkite-agent/buildkite-agent.cfg
+  - umask 0077
+  - cat > /etc/rc.conf.d/buildkite <<'EOF'
+  - buildkite_token=${buildkite_agent_token}
+  - buildkite_env_file=/var/run/buildkite-agent.env
+  - EOF
 
 runcmd:
   # Force DHCP release so our (new) hostname gets inserted into DNS.

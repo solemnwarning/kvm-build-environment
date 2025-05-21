@@ -27,11 +27,17 @@ build {
     destination = "/usr/local/bin/xvfb-run"
   }
 
+  provisioner "file" {
+    source      = "buildkite-rc.d.patch"
+    destination = "/tmp/"
+  }
+
   provisioner "shell" {
     inline = [
       "ASSUME_ALWAYS_YES=yes pkg install \\",
       "  bash           \\",
       "  botan2         \\",
+      "  buildkite-agent \\",
       "  capstone4      \\",
       "  git            \\",
       "  gmake          \\",
@@ -47,36 +53,40 @@ build {
       "  xorg-fonts     \\",
       "  xorg-vfbserver",
 
+      "patch -d /usr/local/etc/rc.d/ -i /tmp/buildkite-rc.d.patch",
+
       "luarocks53 install busted",
 
       "chmod 0755 /usr/local/bin/xvfb-run",
+
+      "echo 'buildkite-agent::::::Buildkite Agent:/var/lib/buildkite-agent:/usr/local/bin/bash:' | adduser -D -f - -w no",
+      "install -d -m 0700 -o buildkite-agent -g buildkite-agent /var/lib/buildkite-agent",
+
+      "echo buildkite_enable=YES              >> /etc/rc.conf.local",
+      "echo buildkite_account=buildkite-agent >> /etc/rc.conf.local",
     ]
 
-    timeout = "1h"
-  }
-
-  provisioner "shell" {
-    script = "install-buildkite.sh"
     timeout = "10m"
   }
 
   provisioner "file" {
     source      = "buildkite-agent.cfg"
-    destination = "/usr/local/etc/buildkite-agent/buildkite-agent.cfg"
+    destination = "/usr/local/etc/buildkite/buildkite-agent.cfg"
   }
 
   provisioner "file" {
     source      = "buildkite-environment-hook"
-    destination = "/usr/local/etc/buildkite-agent/hooks/environment"
+    destination = "/usr/local/etc/buildkite/hooks/environment"
   }
 
-  provisioner "shell" {
-    inline = [
-      "chown root:buildkite-agent /usr/local/etc/buildkite-agent/buildkite-agent.cfg",
-      "chmod 0640 /usr/local/etc/buildkite-agent/buildkite-agent.cfg",
+  provisioner "file" {
+    source      = "idle-check"
+    destination = "/usr/local/sbin/idle-check"
+  }
 
-      "chmod 0755 /usr/local/etc/buildkite-agent/hooks/environment",
-    ]
+  provisioner "file" {
+    source      = "idle-check.crontab"
+    destination = "/etc/cron.d/idle-check"
   }
 
   post-processor "shell-local" {

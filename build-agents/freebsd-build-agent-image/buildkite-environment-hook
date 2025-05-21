@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/local/bin/bash
 
 # The `environment` hook will run before all other commands, and can be used
 # to set up secrets, data, etc. Anything exported in hooks will be available
