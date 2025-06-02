@@ -35,7 +35,7 @@ IF NOT "%MSYSTEM%" == "" (
 rem Write out a file containing all of the commands from the BUILDKITE_COMMAND
 rem environment variable outside of the working directory so we can execute
 rem them as a batch file.
-C:\msys64\usr\bin\bash.exe -c "cat > \"%cd%.bat\" <<< $BUILDKITE_COMMAND"
+C:\msys64\usr\bin\bash.exe -c "/c/msys64/usr/bin/cat.exe > \"%cd%.bat\" <<< $BUILDKITE_COMMAND"
 
 ECHO --- Running commands
 
