@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+MAX_WAIT_SECONDS=120
+
 set -e
 
 if [ "$(id -nu)" != "buildkite-agent" ]
@@ -12,10 +14,25 @@ caught_sigint=
 trap 'caught_sigint=1' SIGINT
 
 echo "Waiting for /tmp/buildkite-configured file..."
-while [ ! -e "/tmp/buildkite-configured" ]
+wait_count=0
+while [ ! -e "/tmp/buildkite-configured" ] && [ "$wait_count" -lt "$MAX_WAIT_SECONDS" ]
 do
 	sleep 1
+	wait_count=$((wait_count + 1))
 done
+
+if [ -n "$caught_sigint" ]
+then
+	exit
+fi
+
+if [ ! -e "/tmp/buildkite-configured" ]
+then
+	echo "Timed out, shutting down"
+	sudo /sbin/shutdown -h now
+
+	exit
+fi
 
 . /etc/buildkite-agent/buildkite-agent.env
 
