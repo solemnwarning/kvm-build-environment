@@ -589,10 +589,44 @@ module "macos1013_build_vmhost01" {
   vcpu = 4
 }
 
+module "macos1013_build_vmhost02" {
+  source    = "./macos1013-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost02
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+  admin_username = var.macos_admin_username
+  admin_ssh_keys = var.admin_ssh_keys
+
+  memory = 8192
+  vcpu = 4
+}
+
 module "macos14_build_vmhost01" {
   source    = "./macos14-build-agent-deploy/"
   providers = {
     libvirt = libvirt.vmhost01
+  }
+
+  domain = "build.solemnwarning.net"
+
+  buildkite_agent_token = var.buildkite_agent_token
+  http_proxy_url = var.http_proxy_url
+  admin_username = var.macos_admin_username
+  admin_ssh_keys = var.admin_ssh_keys
+
+  memory = 8192
+  vcpu = 4
+}
+
+module "macos14_build_vmhost02" {
+  source    = "./macos14-build-agent-deploy/"
+  providers = {
+    libvirt = libvirt.vmhost02
   }
 
   domain = "build.solemnwarning.net"
