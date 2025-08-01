@@ -174,7 +174,12 @@ build {
   }
 
   provisioner "file" {
-    source = "ipxtester-images/ipxtest-win10x64-2023-09-13"
+    source = "ipxtester-images/ipxtest-win10x64-2025-07-27"
+    destination = "/mnt/ipxtester-data/images/"
+  }
+
+  provisioner "file" {
+    source = "ipxtester-images/ipxtest-win11x64-2025-07-31"
     destination = "/mnt/ipxtester-data/images/"
   }
 
