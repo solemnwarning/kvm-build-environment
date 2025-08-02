@@ -1,0 +1,10 @@
+[Unit]
+Description=Remove older files from ccache when disk is nearly full
+Requires=clean-ccache.service
+
+[Timer]
+Unit=clean-ccache.service
+OnUnitActiveSec=3600
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=Remove older files from ccache when disk is nearly full
+Wants=clean-ccache.timer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/clean-ccache
+
+[Install]
+WantedBy=multi-user.target

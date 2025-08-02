@@ -58,6 +58,30 @@ build {
     destination = "/etc/nginx/sites-enabled/ccache-server"
   }
 
+  provisioner "file" {
+    sources = [
+      "clean-ccache.sh",
+    ]
+
+    destination = "/usr/local/bin/clean-ccache"
+  }
+
+  provisioner "file" {
+    sources = [
+      "clean-ccache.service",
+      "clean-ccache.timer",
+    ]
+
+    destination = "/etc/systemd/system/"
+  }
+
+  provisioner "shell" {
+    inline = [
+      "systemctl daemon-reload",
+      "systemctl enable clean-ccache.timer",
+    ]
+  }
+
   provisioner "shell" {
     script = "clean-system.sh"
   }
@@ -92,7 +116,7 @@ source qemu "debian" {
 
   cpus        = 2
   memory      = 2048
-  disk_size   = 24000
+  disk_size   = 48000
   accelerator = "kvm"
 
   headless = true
