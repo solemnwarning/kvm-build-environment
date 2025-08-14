@@ -40,6 +40,7 @@ create("bullseye-i386-sbuild",  "i386",  "bullseye", "http://deb.debian.org/debi
 create("bullseye-amd64-sbuild", "amd64", "bullseye", "http://deb.debian.org/debian/");
 create("bookworm-i386-sbuild",  "i386",  "bookworm", "http://deb.debian.org/debian/");
 create("bookworm-amd64-sbuild", "amd64", "bookworm", "http://deb.debian.org/debian/");
+create("trixie-amd64-sbuild",   "amd64", "trixie",   "http://deb.debian.org/debian/");
 
 sub ubuntu_extras
 {

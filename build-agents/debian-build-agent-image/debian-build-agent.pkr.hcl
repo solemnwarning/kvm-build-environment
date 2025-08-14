@@ -52,6 +52,9 @@ build {
     ]
 
     inline = [
+      # Disable use of systemd-resolved so .local names can be resolved from DNS.
+      "echo 'hosts: files myhostname dns' >> /etc/nsswitch.conf",
+
       # Install Buildkite agent
 
       "apt-get -y update",
@@ -118,13 +121,24 @@ build {
   }
 
   provisioner "shell" {
-    script = "clean-system.sh"
+    inline = [
+      # Clear cloud-init's instance state so per-instance steps (e.g. creating SSH
+      # keys, setting passwords) will run when the image is booted.
+      "cloud-init clean",
+    ]
   }
 
   post-processor "shell-local" {
     keep_input_artifact = true
     inline = [
       "cd ${var.output_dir}/",
+
+      # Clear any state from the machine image (logs, caches, keys, etc).
+      "virt-sysprep -a debian-build-agent.qcow2 -v --run-command 'fstrim --all --verbose'",
+
+      # Work around https://bugzilla.redhat.com/show_bug.cgi?id=1554546
+      "virt-sysprep -a debian-build-agent.qcow2 -v --operations machine-id",
+
       "sha256sum debian-build-agent.qcow2 > SHA256SUMS",
     ]
   }
@@ -133,8 +147,8 @@ build {
 data "sshkey" "install" {}
 
 source qemu "debian" {
-  iso_url      = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2"
-  iso_checksum = "file:https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS"
+  iso_url      = "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2"
+  iso_checksum = "file:https://cloud.debian.org/images/cloud/trixie/latest/SHA512SUMS"
   disk_image   = true
 
   ssh_private_key_file = data.sshkey.install.private_key_path
