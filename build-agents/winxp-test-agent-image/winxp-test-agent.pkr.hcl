@@ -25,18 +25,6 @@ variable "https_proxy" {
   default = env("https_proxy")
 }
 
-variable "bvssh_inst_url" {
-  default = "https://dl.bitvise.com/BvSshServer-Inst.exe"
-}
-
-variable "winxp_iso_name" {
-  default = "en_windows_xp_professional_with_service_pack_3_x86_cd_vl_x14-73974.iso"
-}
-
-variable "winxp_iso_url" {
-  default = "https://archive.org/download/XPPRO_SP3_ENU/en_windows_xp_professional_with_service_pack_3_x86_cd_vl_x14-73974.iso"
-}
-
 build {
   sources = ["source.qemu.debian"]
 
@@ -45,11 +33,13 @@ build {
       "buildkite-agent.cfg",
       "buildkite-agent.id_rsa",
       "buildkite-agent.known_hosts",
+      "buildkite-agent.sudoers",
       "buildkite-environment-hook",
       "buildkite-pre-exit-hook",
       "powernapd.conf",
       "smb.conf",
       "win",
+      "win-boot",
     ]
 
     destination = "/tmp/"
@@ -64,6 +54,26 @@ build {
     ]
 
     inline = [
+      # Disable use of systemd-resolved so that resolution of .local names from
+      # my LAN DNS server works.
+      "echo 'hosts: files myhostname dns' >> /etc/nsswitch.conf",
+
+      # Partition disk and create btrfs filesystem for storing images
+      "apt-get -y update",
+      "apt-get -y install parted btrfs-progs",
+
+      "echo Partitioning disk...",
+
+      "parted -s -a optimal /dev/vdb mklabel gpt",
+      "parted -s -a optimal /dev/vdb mkpart primary btrfs 0% 100%",
+      "blockdev --rereadpt /dev/vdb",
+
+      "mkfs.btrfs -L srv /dev/vdb1",
+
+      "echo LABEL=srv  /srv/  auto  defaults  0  0 >> /etc/fstab",
+
+      "mount /srv/",
+
       # Install Buildkite agent
 
       "apt-get -y update",
@@ -72,13 +82,16 @@ build {
       "echo deb https://apt.buildkite.com/buildkite-agent stable main > /etc/apt/sources.list.d/buildkite-agent.list",
 
       "apt-get -y update",
-      "apt-get -y install buildkite-agent",
+      "apt-get -y install buildkite-agent jq",
+
+      "install -m 0644 -o root -g root /tmp/buildkite-agent.sudoers /etc/sudoers.d/buildkite-agent",
 
       "install -m 0755 -o root -g root /tmp/buildkite-environment-hook /etc/buildkite-agent/hooks/environment",
       "install -m 0755 -o root -g root /tmp/buildkite-pre-exit-hook    /etc/buildkite-agent/hooks/pre-exit",
       "install -m 0644 -o root -g root /tmp/buildkite-agent.cfg        /etc/buildkite-agent/buildkite-agent.cfg",
 
       "install -m 0755 -o root -g root /tmp/win /usr/local/bin/",
+      "install -m 0755 -o root -g root /tmp/win-boot /usr/local/bin/",
 
       "systemctl enable buildkite-agent.service",
 
@@ -86,10 +99,6 @@ build {
       "install -m 0600 /tmp/buildkite-agent.known_hosts /var/lib/buildkite-agent/.ssh/known_hosts",
       "install -m 0600 /tmp/buildkite-agent.id_rsa /var/lib/buildkite-agent/.ssh/id_rsa",
       "chown -R buildkite-agent:buildkite-agent /var/lib/buildkite-agent/.ssh/",
-
-      # Install QEMU
-      "apt-get -y install --no-install-recommends qemu-system",
-      "usermod -a -G kvm buildkite-agent",
 
       # Install powernap
 
@@ -102,13 +111,15 @@ build {
       "cp /tmp/powernapd.conf /etc/powernap/powernapd.conf",
       "systemctl enable powernap",
 
-      # Install Packer
+      # Install iSCSI target daemon
 
-      "wget -O - https://apt.releases.hashicorp.com/gpg | apt-key add -",
-      "echo deb [arch=amd64] https://apt.releases.hashicorp.com bookworm main > /etc/apt/sources.list.d/hashicorp.list",
+      "apt-get -y install tgt",
+      "mkdir /srv/iscsi",
 
-      "apt-get -y update",
-      "apt-get -y install packer",
+      # Install TFTP server and iPXE image.
+
+      "apt-get -y install tftpd-hpa",
+      "wget -O /srv/tftp/undionly.kpxe http://boot.ipxe.org/undionly.kpxe",
 
       # Install Samba
 
@@ -117,45 +128,44 @@ build {
     ]
   }
 
-  # Build Windows XP VM
-
-  provisioner "shell-local" {
-    inline = [
-      "if [ ! -e winxp-image/BvSshServer-Inst.exe ]; then wget -O winxp-image/BvSshServer-Inst.exe ${var.bvssh_inst_url}; fi",
-      "if [ ! -e winxp-image/${var.winxp_iso_name} ]; then wget -O winxp-image/${var.winxp_iso_name} ${var.winxp_iso_url}; fi",
-    ]
-  }
-
   provisioner "file" {
     sources = [
-      "winxp-image"
+      "images/winxp-base.img.gz",
     ]
 
-    destination = "/usr/src/"
+    destination = "/srv/iscsi/"
   }
 
   provisioner "shell" {
     inline = [
-      "cd /usr/src/winxp-image/",
-      "packer init  -var iso_url=${var.winxp_iso_name} winxp.pkr.hcl",
-      "packer build -var iso_url=${var.winxp_iso_name} winxp.pkr.hcl",
-
-      "mkdir /opt/winxp-image/",
-      "cp /usr/src/winxp-image/output/winxp.qcow2 /opt/winxp-image/",
-
-      "rm -rf /usr/src/winxp-image/",
+      "cd /srv/iscsi/",
+      "gunzip *.gz",
     ]
   }
 
   provisioner "shell" {
-    script = "clean-system.sh"
+    inline = [
+      # Clear cloud-init's instance state so per-instance steps (e.g. creating SSH
+      # keys, setting passwords) will run when the image is booted.
+      "cloud-init clean",
+    ]
   }
 
   post-processor "shell-local" {
     keep_input_artifact = true
     inline = [
       "cd ${var.output_dir}/",
-      "sha256sum winxp-test-agent.qcow2 > SHA256SUMS",
+
+      "mv winxp-test-agent.qcow2 winxp-test-agent-1.qcow2",
+      "mv winxp-test-agent.qcow2-1 winxp-test-agent-2.qcow2",
+
+      # Clear any state from the machine image (logs, caches, keys, etc).
+      "virt-sysprep -a winxp-test-agent-1.qcow2 --run-command 'fstrim --all --verbose'",
+
+      # Work around https://bugzilla.redhat.com/show_bug.cgi?id=1554546
+      "virt-sysprep -a winxp-test-agent-1.qcow2 --operations machine-id",
+
+      "sha256sum winxp-test-agent-1.qcow2 winxp-test-agent-2.qcow2 > SHA256SUMS",
     ]
   }
 }
@@ -163,8 +173,8 @@ build {
 data "sshkey" "install" {}
 
 source qemu "debian" {
-  iso_url      = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2"
-  iso_checksum = "file:https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS"
+  iso_url      = "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2"
+  iso_checksum = "file:https://cloud.debian.org/images/cloud/trixie/latest/SHA512SUMS"
   disk_image   = true
 
   ssh_private_key_file = data.sshkey.install.private_key_path
@@ -180,9 +190,9 @@ source qemu "debian" {
   use_backing_file = false
 
   cpus        = 2
-  cpu_model   = "host"
   memory      = 2048
-  disk_size   = 20000
+  disk_size   = "16G"
+  disk_additional_size = [ "32G" ]
   accelerator = "kvm"
 
   headless = true

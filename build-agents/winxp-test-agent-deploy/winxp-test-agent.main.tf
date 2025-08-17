@@ -6,12 +6,8 @@ terraform {
   }
 }
 
-resource "random_id" "suffix" {
-  byte_length = 4
-}
-
 locals {
-  hostname = "winxp-test${ var.hostname_suffix }-${ random_id.suffix.hex }"
+  hostname = "winxp-test"
 }
 
 resource "random_password" "root_password" {
@@ -49,13 +45,13 @@ data "local_file" "image_version" {
 
 locals {
   image_version = chomp(data.local_file.image_version.content)
-  image_path    = "${ path.root }/winxp-test-agent-image/builds/${ local.image_version }/winxp-test-agent.qcow2"
+  image_path    = "${ path.root }/winxp-test-agent-image/builds/${ local.image_version }"
 }
 
-resource "libvirt_volume" "root" {
-  name   = "${ local.hostname }.${ var.domain }_root.qcow2"
+resource "libvirt_volume" "disk1" {
+  name   = "${ local.hostname }.${ var.domain }_disk1.qcow2"
   pool   = var.storage_pool
-  source = local.image_path
+  source = "${ local.image_path }/winxp-test-agent-1.qcow2"
   format = "qcow2"
 
   # Ensure disk is reset to initial state if cloud-init data is changed.
@@ -66,11 +62,25 @@ resource "libvirt_volume" "root" {
   }
 }
 
+resource "libvirt_volume" "disk2" {
+  name   = "${ local.hostname }.${ var.domain }_disk2.qcow2"
+  pool   = var.storage_pool
+  source = "${ local.image_path }/winxp-test-agent-2.qcow2"
+  format = "qcow2"
+}
+
 resource "libvirt_cloudinit_disk" "cloud_init" {
   name = "${ local.hostname }.${ var.domain }_cloud-init.iso"
   pool = var.storage_pool
 
-  network_config = templatefile("${ path.module }/winxp-test-agent.network-config.tftpl", {})
+  network_config = templatefile("${ path.module }/winxp-test-agent.network-config.tftpl", {
+    hostname = local.hostname
+    domain   = var.domain
+
+    ip_and_prefix = var.ip_and_prefix
+    gateway = var.gateway
+    dns_server = var.dns_server
+  })
 
   user_data  = templatefile("${ path.module }/winxp-test-agent.user-data.tftpl", {
     hostname = local.hostname
@@ -83,7 +93,6 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
     ssh_host_rsa     = tls_private_key.ssh_host_rsa
 
     buildkite_agent_token  = var.buildkite_agent_token
-    buildkite_agent_spawn  = var.spawn
     http_proxy_url         = var.http_proxy_url
     admin_ssh_keys         = var.admin_ssh_keys
   })
@@ -96,26 +105,25 @@ resource "libvirt_domain" "domain" {
   vcpu    = var.vcpu
   running = false
 
-  cpu {
-    # Needed for nested virtualisation
-    mode = "host-passthrough"
-  }
-
   # Destroy the VM when replacing the disk, otherwise it may be left running
   # and the disk changed out from under it.
   lifecycle {
     replace_triggered_by = [
-      libvirt_volume.root.id,
+      libvirt_volume.disk1.id,
     ]
   }
 
   cloudinit = "${libvirt_cloudinit_disk.cloud_init.id}"
 
   network_interface {
-    bridge = "dmz-build"
+    bridge = "dmz-rx100"
   }
 
   disk {
-    volume_id = "${libvirt_volume.root.id}"
+    volume_id = "${libvirt_volume.disk1.id}"
+  }
+
+  disk {
+    volume_id = "${libvirt_volume.disk2.id}"
   }
 }

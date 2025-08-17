@@ -6,4 +6,10 @@ network:
       match:
         name: en*
 
-      dhcp4: true
+      dhcp4: false
+      addresses: [ ${ ip_and_prefix } ]
+      gateway4: ${ gateway }
+
+      nameservers:
+        search: [ ${ domain } ]
+        addresses: [ ${ dns_server } ]

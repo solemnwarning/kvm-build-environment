@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec ssh -p "$QEMU_SSH_PORT" Administrator@localhost "X: && $*"
+exec ssh Administrator@rx100.build.solemnwarning.net "X: && $*"

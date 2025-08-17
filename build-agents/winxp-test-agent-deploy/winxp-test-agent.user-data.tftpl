@@ -1,6 +1,6 @@
 #cloud-config
 hostname: ${hostname}
-fqdn: ${hostname}.build.solemnwarning.net
+fqdn: ${hostname}.${domain}
 
 timezone: "Europe/London"
 
@@ -28,12 +28,9 @@ ssh_publish_hostkeys:
   blacklist: [dsa]
 
 bootcmd:
-  # Set proxy to be used by APT (including chroots)
-  - for f in / /srv/chroot/*/
-  - do
-  -   echo 'Acquire::http::Proxy "${http_proxy_url}";' > "$f/etc/apt/apt.conf.d/proxy.conf"
-  -   echo 'Acquire::https::Proxy "${http_proxy_url}";' >> "$f/etc/apt/apt.conf.d/proxy.conf"
-  - done
+  # Set proxy to be used by APT
+  - echo 'Acquire::http::Proxy "${http_proxy_url}";' > "/etc/apt/apt.conf.d/proxy.conf"
+  - echo 'Acquire::https::Proxy "${http_proxy_url}";' >> "/etc/apt/apt.conf.d/proxy.conf"
 
   # Set proxy to be used by buildkite agent
   - mkdir /etc/systemd/system/buildkite-agent.service.d
@@ -46,10 +43,8 @@ bootcmd:
 
   # Inject Buildkite agent token
   - sed -i -e 's/BUILDKITE_AGENT_TOKEN/${buildkite_agent_token}/g' /etc/buildkite-agent/buildkite-agent.cfg
-  - sed -i -e 's/BUILDKITE_AGENT_SPAWN/${buildkite_agent_spawn}/g' /etc/buildkite-agent/buildkite-agent.cfg
 
 runcmd:
   # Force DHCP release so our (new) hostname gets inserted into DNS
   # https://serverfault.com/a/970459
-  - dhclient -r
-  - dhclient
+  - systemctl restart systemd-networkd

@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -eo pipefail
+
+POWER_HOST=rx100-power.build.solemnwarning.net
+
+ISCSI_IQN=iqn.2006-06.net.solemnwarning:rx100-boot
+ISCSI_TID=1
+ISCSI_LUN=1
+ISCSI_FILE=/srv/iscsi/rx100-boot.img
+
+# We are on link with the power control module, bypass proxy.
+export http_proxy=""
+
+force=false
+
+if [ "$1" = "-f" ]
+then
+	force=true
+	shift
+fi
+
+if [ "$#" -ne "1" ]
+then
+	echo "Usage: $0 [-f] <base image>" 1>&2
+	exit 64 # EX_USAGE
+fi
+
+power_on="$(curl -fs "http://${POWER_HOST}/status" | jq '."power-on"')"
+
+if [ "$power_on" = "true" ] && [ "$force" = "false" ]
+then
+	echo "Machine is already powered on (use -f to force reset)" 1>&2
+	exit 75 # EX_TEMPFAIL
+fi
+
+if [ "$power_on" = "true" ]
+then
+	echo "Putting machine into reset..."
+	curl -X POST -fs "http://${POWER_HOST}/reset-hold" > /dev/null
+fi
+
+echo "Preparing iSCSI target..."
+
+# We remove and re-add the target+LUN to tgtd to ensure no dangling connection
+# to the previous image remains.
+
+tgtadm --lld iscsi --op delete --mode logicalunit --tid "$ISCSI_TID" --lun "$ISCSI_LUN" > /dev/null 2>&1 || true
+tgtadm --lld iscsi --op delete --mode target --tid "$ISCSI_TID" --force > /dev/null 2>&1 || true
+
+cp --reflink "$1" "$ISCSI_FILE"
+
+tgtadm --lld iscsi --op new --mode target --tid "$ISCSI_TID" -T "$ISCSI_IQN"
+tgtadm --lld iscsi --op new --mode logicalunit --tid "$ISCSI_TID" --lun "$ISCSI_LUN" --backing-store "$ISCSI_FILE"
+tgtadm --lld iscsi --op bind --mode target --tid "$ISCSI_TID" --initiator-address ALL
+
+if [ "$power_on" = "true" ]
+then
+	echo "Releasing reset..."
+	http_proxy="" curl -X POST -fs "http://${POWER_HOST}/reset" > /dev/null
+else
+	echo "Powering on..."
+	curl -X POST -fs "http://${POWER_HOST}/power-on" > /dev/null
+fi

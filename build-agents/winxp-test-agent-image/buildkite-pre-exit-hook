@@ -5,14 +5,10 @@
 # Note that as the script is sourced not run directly, the shebang line will be ignored
 # See https://buildkite.com/docs/agent/v3/hooks#creating-hook-scripts
 
-if [ -n "$QEMU_PID" ]
+if [ -e ~/.test-machine-powered-on ]
 then
-	echo "Terminating QEMU ($QEMU_PID)"
-	kill -KILL "$QEMU_PID"
-fi
-
-if [ -n "$QEMU_DISK" ]
-then
-	echo "Deleting QEMU disk image ($QEMU_DISK)"
-	rm -f "$QEMU_DISK"
+	echo "Powering off test machine..."
+	http_proxy="" curl -X POST -s "http://rx100-power.build.solemnwarning.net/hard-off"
+	
+	rm -f "~/.test-machine-powered-on"
 fi

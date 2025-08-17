@@ -3,12 +3,19 @@ variable "storage_pool" {
   default = "default"
 }
 
-variable "hostname_suffix" {
+variable "domain" {
   type = string
-  default = ""
 }
 
-variable "domain" {
+variable "ip_and_prefix" {
+  type = string
+}
+
+variable "gateway" {
+  type = string
+}
+
+variable "dns_server" {
   type = string
 }
 
@@ -17,10 +24,6 @@ variable "memory" {
 }
 
 variable "vcpu" {
-  type = number
-}
-
-variable "spawn" {
   type = number
 }
 
