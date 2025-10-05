@@ -254,6 +254,13 @@ build {
     ]
   }
 
+  # Download and install 7-Zip
+  provisioner "powershell" {
+    script = "7zip.ps1"
+    timeout = "5m"
+  }
+
+
   provisioner "file" {
     source = "configure-machine.bat"
     destination = "C:\\"
