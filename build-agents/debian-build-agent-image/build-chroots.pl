@@ -58,8 +58,8 @@ create("bionic-amd64-sbuild",    "amd64", "bionic",    "http://archive.ubuntu.co
 create("focal-amd64-sbuild",     "amd64", "focal",     "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("focal"));
 create("jammy-amd64-sbuild",     "amd64", "jammy",     "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("jammy"));
 create("noble-amd64-sbuild",     "amd64", "noble",     "http://archive.ubuntu.com/ubuntu/", "gutsy", ubuntu_extras("noble"));
-create("oracular-amd64-sbuild",  "amd64", "oracular",  "http://archive.ubuntu.com/ubuntu/", "gutsy", ubuntu_extras("oracular"));
 create("plucky-amd64-sbuild",    "amd64", "plucky",    "http://archive.ubuntu.com/ubuntu/", "gutsy", ubuntu_extras("plucky"));
+create("questing-amd64-sbuild",  "amd64", "questing",  "http://archive.ubuntu.com/ubuntu/", "gutsy", ubuntu_extras("questing"));
 
 # Until all sbuild-createchroot processes have finished...
 while(%procs)
