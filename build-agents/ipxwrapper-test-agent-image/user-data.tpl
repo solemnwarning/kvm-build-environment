@@ -1,8 +1,5 @@
 #cloud-config
 
-growpart:
-  mode: false
-
 users:
   - name: root
     ssh_authorized_keys:

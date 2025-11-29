@@ -50,5 +50,6 @@ bootcmd:
 runcmd:
   # Force DHCP release so our (new) hostname gets inserted into DNS
   # https://serverfault.com/a/970459
-  - dhclient -r
-  - dhclient
+  - systemctl restart systemd-networkd
+  # - dhclient -r
+  # - dhclient

@@ -49,13 +49,13 @@ data "local_file" "image_version" {
 
 locals {
   image_version = chomp(data.local_file.image_version.content)
-  image_path    = "${ path.root }/ipxwrapper-test-agent-image/builds/${ local.image_version }/ipxwrapper-test-agent.qcow2"
+  image_path    = "${ path.root }/ipxwrapper-test-agent-image/builds/${ local.image_version }"
 }
 
-resource "libvirt_volume" "root" {
-  name   = "${ local.hostname }.${ var.domain }_root.qcow2"
+resource "libvirt_volume" "disk1" {
+  name   = "${ local.hostname }.${ var.domain }_disk1.qcow2"
   pool   = var.storage_pool
-  source = local.image_path
+  source = "${ local.image_path }/ipxwrapper-test-agent-1.qcow2"
   format = "qcow2"
 
   # Ensure disk is reset to initial state if cloud-init data is changed.
@@ -64,6 +64,13 @@ resource "libvirt_volume" "root" {
       libvirt_cloudinit_disk.cloud_init.id,
     ]
   }
+}
+
+resource "libvirt_volume" "disk2" {
+  name   = "${ local.hostname }.${ var.domain }_disk2.qcow2"
+  pool   = var.storage_pool
+  source = "${ local.image_path }/ipxwrapper-test-agent-2.qcow2"
+  format = "qcow2"
 }
 
 resource "libvirt_cloudinit_disk" "cloud_init" {
@@ -105,7 +112,8 @@ resource "libvirt_domain" "domain" {
   # and the disk changed out from under it.
   lifecycle {
     replace_triggered_by = [
-      libvirt_volume.root.id,
+      libvirt_volume.disk1.id,
+      libvirt_volume.disk2.id,
     ]
   }
 
@@ -116,6 +124,10 @@ resource "libvirt_domain" "domain" {
   }
 
   disk {
-    volume_id = "${libvirt_volume.root.id}"
+    volume_id = "${libvirt_volume.disk1.id}"
+  }
+
+  disk {
+    volume_id = "${libvirt_volume.disk2.id}"
   }
 }

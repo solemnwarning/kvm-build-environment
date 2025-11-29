@@ -48,23 +48,23 @@ build {
     ]
 
     inline = [
-      # Partition disk and create btrfs filesystem for storing ipxtester images
+      # Disable use of systemd-resolved so that resolution of .local names from
+      # my LAN DNS server works.
+      "echo 'hosts: files myhostname dns' >> /etc/nsswitch.conf",
 
+      # Partition disk and create btrfs filesystem for storing ipxtester images
       "apt-get -y update",
       "apt-get -y install parted btrfs-progs",
 
-      "echo Current disk layout:",
-      "echo Fix | parted ---pretend-input-tty /dev/vda print",
-      # ^ Fixes GPT for new disk size (if necessary)
-
       "echo Partitioning disk...",
+      "lsblk",
+      "blkid",
 
-      # https://bugs.launchpad.net/ubuntu/+source/parted/+bug/1270203
-      "echo yes | parted ---pretend-input-tty -a optimal /dev/vda resizepart 1 12G",
-      "resize2fs /dev/vda1",
-
-      "parted -s -a optimal /dev/vda mkpart primary btrfs 12G 100%",
-      "mkfs.btrfs -L ipxtester-data /dev/vda2",
+      "parted -s -a optimal /dev/vdb mklabel gpt",
+      # "parted -s -a optimal /dev/vdb mklabel msdos",
+      "parted -s -a optimal /dev/vdb mkpart primary btrfs 0% 100%",
+      "partprobe /dev/vdb",
+      "mkfs.btrfs -f -L ipxtester-data /dev/vdb1",
 
       "mkdir /mnt/ipxtester-data/",
       "echo LABEL=ipxtester-data  /mnt/ipxtester-data/  auto  defaults  0  0 >> /etc/fstab",
@@ -72,10 +72,6 @@ build {
       "mount /mnt/ipxtester-data/",
       "mkdir /mnt/ipxtester-data/images/",
       "mkdir /mnt/ipxtester-data/tmp/",
-
-      "echo New disk layout:",
-      "parted /dev/vda print",
-      "df -h",
 
       # Install Buildkite agent
 
@@ -189,14 +185,28 @@ build {
   }
 
   provisioner "shell" {
-    script = "clean-system.sh"
+    inline = [
+      # Clear cloud-init's instance state so per-instance steps (e.g. creating SSH
+      # keys, setting passwords) will run when the image is booted.
+      "cloud-init clean",
+    ]
   }
 
   post-processor "shell-local" {
     keep_input_artifact = true
     inline = [
       "cd ${var.output_dir}/",
-      "sha256sum ipxwrapper-test-agent.qcow2 > SHA256SUMS",
+
+      "mv ipxwrapper-test-agent.qcow2 ipxwrapper-test-agent-1.qcow2",
+      "mv ipxwrapper-test-agent.qcow2-1 ipxwrapper-test-agent-2.qcow2",
+
+      # Clear any state from the machine image (logs, caches, keys, etc).
+      "virt-sysprep -a ipxwrapper-test-agent-1.qcow2 -v --run-command 'fstrim --all --verbose'",
+
+      # Work around https://bugzilla.redhat.com/show_bug.cgi?id=1554546
+      "virt-sysprep -a ipxwrapper-test-agent-1.qcow2 -v --operations machine-id",
+
+      "sha256sum ipxwrapper-test-agent-1.qcow2 ipxwrapper-test-agent-2.qcow2 > SHA256SUMS",
     ]
   }
 }
@@ -204,10 +214,10 @@ build {
 data "sshkey" "install" {}
 
 source qemu "debian" {
-  # iso_url      = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2"
-  # iso_checksum = "file:https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS"
-  iso_url      = "https://cloud.debian.org/images/cloud/bookworm/20241004-1890/debian-12-genericcloud-amd64-20241004-1890.qcow2"
-  iso_checksum = "file:https://cloud.debian.org/images/cloud/bookworm/20241004-1890/SHA512SUMS"
+  iso_url      = "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2"
+  iso_checksum = "file:https://cloud.debian.org/images/cloud/trixie/latest/SHA512SUMS"
+  # iso_url      = "https://cloud.debian.org/images/cloud/bookworm/20241004-1890/debian-12-genericcloud-amd64-20241004-1890.qcow2"
+  # iso_checksum = "file:https://cloud.debian.org/images/cloud/bookworm/20241004-1890/SHA512SUMS"
   disk_image   = true
 
   ssh_private_key_file = data.sshkey.install.private_key_path
@@ -224,7 +234,8 @@ source qemu "debian" {
 
   cpus        = 2
   memory      = 2048
-  disk_size   = 96000
+  disk_size   = "16G"
+  disk_additional_size = [ "120G" ]
   accelerator = "kvm"
 
   headless = true
