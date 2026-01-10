@@ -45,7 +45,7 @@ build {
       "msys ' '",
       "msys 'pacman --noconfirm -Syuu'",
       "msys 'pacman --noconfirm -Syuu'",
-      "msys 'pacman --noconfirm -S base-devel git p7zip mingw-w64-x86_64-{toolchain,wxwidgets3.2-msw,jansson,capstone,jbigkit,lua,lua-luarocks,libbotan,libunistring}'",
+      "msys 'pacman --noconfirm -S base-devel git p7zip mingw-w64-x86_64-{toolchain,wxwidgets3.2-msw,jansson,capstone,jbigkit,lua,lua-luarocks,lua-luafilesystem,libbotan,libunistring}'",
 
       # Need the "msys" GCC for compiling Template Toolkit...
       "msys 'pacman --noconfirm -S gcc libxcrypt libxcrypt-devel perl-Mozilla-CA'",
@@ -55,10 +55,6 @@ build {
 
       # "function mingw32() { $env:MSYSTEM = 'MINGW32'; C:\\msys64\\usr\\bin\\bash.exe @('-lc') + @Args; Remove-Item Env:\\MSYSTEM }",
       "function mingw64() { $env:MSYSTEM = 'MINGW64'; C:\\msys64\\usr\\bin\\bash.exe @('-lc') + @Args; Remove-Item Env:\\MSYSTEM }",
-
-      # Work around https://github.com/msys2/MINGW-packages/pull/12002
-      "msys 'mkdir -p C:/msys64/mingw{32,64}/lib/luarocks/rocks-5.4/luafilesystem/1.8.0-1/{conf,lib}'",
-      "mingw64 'luarocks install --force luafilesystem'",
 
       "mingw64 'luarocks install busted'",
     ]
