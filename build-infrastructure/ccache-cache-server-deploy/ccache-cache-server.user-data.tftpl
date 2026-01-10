@@ -28,6 +28,7 @@ ssh_publish_hostkeys:
   enabled: true
   blacklist: [dsa]
 
+# Runs early on first boot only.
 bootcmd:
   - cat > /etc/ssl/certs/ccache-cache-https-server.pem <<'EOF'
   - ${ replace(chomp(https_server_cert.cert_pem), "\n", "\n  - ") }
@@ -40,3 +41,15 @@ bootcmd:
   - cat > /etc/ssl/certs/ccache-cache-https-auth-ca.pem <<'EOF'
   - ${ replace(chomp(https_auth_ca_cert.cert_pem), "\n", "\n  - ") }
   - EOF
+
+disk_setup:
+  /dev/vdb:
+    layout: [100] # Create /dev/vdb1 occupying 100% of the disk
+
+fs_setup:
+  - device: /dev/vdb1
+    filesystem: ext4
+    label: srv
+
+mounts:
+- [/dev/vdb1, /srv/]

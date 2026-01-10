@@ -44,9 +44,6 @@ build {
       "apt-get -y install nginx",
 
       "rm -f /etc/nginx/sites-enabled/default",
-
-      "mkdir /srv/ccache-cache/",
-      "chown www-data /srv/ccache-cache/",
     ]
   }
 
@@ -73,6 +70,20 @@ build {
     ]
 
     destination = "/etc/systemd/system/"
+  }
+
+  provisioner "shell" {
+    inline = [
+      "mkdir -p /etc/systemd/system/nginx.service.d/",
+    ]
+  }
+
+  provisioner "file" {
+    sources = [
+      "ccache-directory.conf",
+    ]
+
+    destination = "/etc/systemd/system/nginx.service.d/"
   }
 
   provisioner "shell" {
@@ -116,7 +127,7 @@ source qemu "debian" {
 
   cpus        = 2
   memory      = 2048
-  disk_size   = 48000
+  disk_size   = 24000
   accelerator = "kvm"
 
   headless = true
