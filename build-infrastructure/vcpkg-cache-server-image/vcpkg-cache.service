@@ -11,6 +11,13 @@ RestartSec=10
 User=vcpkg-cache
 Group=vcpkg-cache
 
+# The /srv/ filesystem is set up by cloud-init, so we must ensure the vcpkg directory is created
+# with appropriate permissions and the ownership of any files from a previous VM instance which
+# could POTENTIALLY have different UIDs/GIDs are fixed up before starting the service.
+
+ExecStartPre=+/usr/bin/mkdir -p /srv/vcpkg-cache/
+ExecStartPre=+/usr/bin/chown -R vcpkg-cache:vcpkg-cache /srv/vcpkg-cache/
+
 ExecStart=/usr/local/bin/vcpkg-cache-http -host 127.0.0.1 files:/srv/vcpkg-cache/
 
 [Install]

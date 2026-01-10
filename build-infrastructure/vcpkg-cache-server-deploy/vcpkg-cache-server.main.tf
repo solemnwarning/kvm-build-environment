@@ -83,6 +83,12 @@ resource "libvirt_volume" "root" {
   }
 }
 
+resource "libvirt_volume" "data" {
+  name   = "${ var.hostname }.${ var.domain }_data.qcow2"
+  pool   = var.storage_pool
+  size   = 51539607552 # 48 GiB
+}
+
 resource "libvirt_cloudinit_disk" "cloud_init" {
   name = "${ var.hostname }.${ var.domain }_cloud-init.iso"
   pool = var.storage_pool
@@ -136,5 +142,9 @@ resource "libvirt_domain" "domain" {
 
   disk {
     volume_id = "${libvirt_volume.root.id}"
+  }
+
+  disk {
+    volume_id = "${libvirt_volume.data.id}"
   }
 }
