@@ -1,0 +1,4 @@
+# Disable safe directory checks so git running as the apache user can
+# access the repositories owned by the git user.
+[safe]
+	directory = *

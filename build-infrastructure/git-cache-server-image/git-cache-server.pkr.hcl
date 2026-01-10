@@ -62,6 +62,11 @@ build {
   }
 
   provisioner "file" {
+    source = "gitconfig"
+    destination = "/etc/gitconfig"
+  }
+
+  provisioner "file" {
     source = "update-git-mirrors.sh"
     destination = "/usr/local/bin/update-git-mirrors"
   }
