@@ -18,17 +18,19 @@ cd "$(dirname "$0")/"
 timestamp=$(date --utc '+%Y-%m-%dT%H:%M:%SZ')
 log=$(mktemp)
 
-packer init  -var "output_dir=builds/${timestamp}" ipxwrapper-test-agent.pkr.hcl
+packer init  -var "output_dir=builds/ipxwrapper-test-agent/${timestamp}" ipxwrapper-test-agent.pkr.hcl
 
 if [ -n "$quiet" ]
 then
-	packer build -timestamp-ui -var "output_dir=builds/${timestamp}" ipxwrapper-test-agent.pkr.hcl > "${log}" 2>&1 \
+	packer build -timestamp-ui -var "output_dir=builds/ipxwrapper-test-agent/${timestamp}" ipxwrapper-test-agent.pkr.hcl > "${log}" 2>&1 \
 		|| (status=$?; cat "${log}"; rm -f "${log}"; exit $status)
 else
-	packer build -timestamp-ui -var "output_dir=builds/${timestamp}" ipxwrapper-test-agent.pkr.hcl |& tee "${log}"
+	packer build -timestamp-ui -var "output_dir=builds/ipxwrapper-test-agent/${timestamp}" ipxwrapper-test-agent.pkr.hcl |& tee "${log}"
 fi
 
-mv "${log}" "builds/${timestamp}/build.log"
+mv "${log}" "builds/ipxwrapper-test-agent/${timestamp}/build.log"
 
-ln -snf "${timestamp}" "builds/latest"
-echo "${timestamp}" > "builds/latest-version"
+ln -snf "${timestamp}" "builds/ipxwrapper-test-agent/latest"
+echo "${timestamp}" > "builds/ipxwrapper-test-agent/latest-version"
+
+./pack-ipxtester-images.sh

@@ -43,19 +43,26 @@ resource "tls_private_key" "https_key" {
   rsa_bits = 3072
 }
 
-data "local_file" "image_version" {
-  filename = "${ path.root }/ipxwrapper-test-agent-image/builds/latest-version"
+data "local_file" "disk1_image_version" {
+  filename = "${ path.root }/ipxwrapper-test-agent-image/builds/ipxwrapper-test-agent/latest-version"
+}
+
+data "local_file" "disk2_image_name" {
+  filename = "${ path.root }/ipxwrapper-test-agent-image/builds/ipxwrapper-test-images/latest-version"
 }
 
 locals {
-  image_version = chomp(data.local_file.image_version.content)
-  image_path    = "${ path.root }/ipxwrapper-test-agent-image/builds/${ local.image_version }"
+  disk1_image_version = chomp(data.local_file.disk1_image_version.content)
+  disk1_image_path    = "${ path.root }/ipxwrapper-test-agent-image/builds/ipxwrapper-test-agent/${ local.disk1_image_version }/ipxwrapper-test-agent.qcow2"
+
+  disk2_image_name = chomp(data.local_file.disk2_image_name.content)
+  disk2_image_path = "${ path.root }/ipxwrapper-test-agent-image/builds/ipxwrapper-test-images/${ local.disk2_image_name }"
 }
 
 resource "libvirt_volume" "disk1" {
   name   = "${ local.hostname }.${ var.domain }_disk1.qcow2"
   pool   = var.storage_pool
-  source = "${ local.image_path }/ipxwrapper-test-agent-1.qcow2"
+  source = local.disk1_image_path
   format = "qcow2"
 
   # Ensure disk is reset to initial state if cloud-init data is changed.
@@ -69,7 +76,7 @@ resource "libvirt_volume" "disk1" {
 resource "libvirt_volume" "disk2" {
   name   = "${ local.hostname }.${ var.domain }_disk2.qcow2"
   pool   = var.storage_pool
-  source = "${ local.image_path }/ipxwrapper-test-agent-2.qcow2"
+  source = local.disk2_image_path
   format = "qcow2"
 }
 

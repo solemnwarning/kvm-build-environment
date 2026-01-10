@@ -48,30 +48,9 @@ build {
     ]
 
     inline = [
-      # Disable use of systemd-resolved so that resolution of .local names from
-      # my LAN DNS server works.
-      "echo 'hosts: files myhostname dns' >> /etc/nsswitch.conf",
-
-      # Partition disk and create btrfs filesystem for storing ipxtester images
-      "apt-get -y update",
-      "apt-get -y install parted btrfs-progs",
-
-      "echo Partitioning disk...",
-      "lsblk",
-      "blkid",
-
-      "parted -s -a optimal /dev/vdb mklabel gpt",
-      # "parted -s -a optimal /dev/vdb mklabel msdos",
-      "parted -s -a optimal /dev/vdb mkpart primary btrfs 0% 100%",
-      "partprobe /dev/vdb",
-      "mkfs.btrfs -f -L ipxtester-data /dev/vdb1",
-
+      # Prepare the mount point for the ipxtester data disk.
       "mkdir /mnt/ipxtester-data/",
       "echo LABEL=ipxtester-data  /mnt/ipxtester-data/  auto  defaults  0  0 >> /etc/fstab",
-
-      "mount /mnt/ipxtester-data/",
-      "mkdir /mnt/ipxtester-data/images/",
-      "mkdir /mnt/ipxtester-data/tmp/",
 
       # Install Buildkite agent
 
@@ -111,7 +90,6 @@ build {
   provisioner "file" {
     sources = [
       "buildkite-agent.sshconfig",
-      "ipxtester.ini",
       "ipxtester-init.service",
       "ipxwrapper-ci/ipxtester",
       "ipxwrapper-ci/ssh-keys/ipxtest-insecure.rsa",
@@ -124,7 +102,7 @@ build {
     inline = [
       "apt-get install -y libconfig-ini-perl libipc-run-perl libnetaddr-ip-perl libio-fdpass-perl mtools",
       "install -D -m 0755 -o root -g root /tmp/ipxtester     /opt/ipxtester/ipxtester",
-      "install -D -m 0755 -o root -g root /tmp/ipxtester.ini /opt/ipxtester/ipxtester.ini",
+      "ln -sv /mnt/ipxtester-data/ipxtester.ini /opt/ipxtester/ipxtester.ini",
 
       "install -d -m 0755 -o buildkite-agent -g buildkite-agent                                /var/lib/buildkite-agent/.ssh/",
       "install -D -m 0644 -o buildkite-agent -g buildkite-agent /tmp/buildkite-agent.sshconfig /var/lib/buildkite-agent/.ssh/config",
@@ -137,51 +115,12 @@ build {
 
       "chmod 0755 /usr/local/bin/ipxtester",
 
-      "chown buildkite-agent /mnt/ipxtester-data/tmp/",
-
       "perl -c /opt/ipxtester/ipxtester",
 
       "install -m 0644 /tmp/ipxtester-init.service /etc/systemd/system/",
       "systemctl daemon-reload",
       "systemctl enable ipxtester-init.service",
     ]
-  }
-
-  # Upload VM disk images
-
-  provisioner "file" {
-    source = "ipxtester-images/ipxtest-director-2024-07-03"
-    destination = "/mnt/ipxtester-data/images/"
-  }
-
-  provisioner "file" {
-    source = "ipxtester-images/ipxtest-winXPx86-2023-09-11"
-    destination = "/mnt/ipxtester-data/images/"
-  }
-
-  provisioner "file" {
-    source = "ipxtester-images/ipxtest-win7x64-2023-09-12"
-    destination = "/mnt/ipxtester-data/images/"
-  }
-
-  provisioner "file" {
-    source = "ipxtester-images/ipxtest-win81x86-2023-09-11"
-    destination = "/mnt/ipxtester-data/images/"
-  }
-
-  provisioner "file" {
-    source = "ipxtester-images/ipxtest-win10x64-2025-07-27"
-    destination = "/mnt/ipxtester-data/images/"
-  }
-
-  provisioner "file" {
-    source = "ipxtester-images/ipxtest-win11x64-2025-07-31"
-    destination = "/mnt/ipxtester-data/images/"
-  }
-
-  provisioner "file" {
-    source = "ipxtester-images/ipxtest-win98-2024-11-03"
-    destination = "/mnt/ipxtester-data/images/"
   }
 
   provisioner "shell" {
@@ -197,16 +136,13 @@ build {
     inline = [
       "cd ${var.output_dir}/",
 
-      "mv ipxwrapper-test-agent.qcow2 ipxwrapper-test-agent-1.qcow2",
-      "mv ipxwrapper-test-agent.qcow2-1 ipxwrapper-test-agent-2.qcow2",
-
       # Clear any state from the machine image (logs, caches, keys, etc).
-      "virt-sysprep -a ipxwrapper-test-agent-1.qcow2 -v --run-command 'fstrim --all --verbose'",
+      "virt-sysprep -a ipxwrapper-test-agent.qcow2 -v --run-command 'fstrim --all --verbose'",
 
       # Work around https://bugzilla.redhat.com/show_bug.cgi?id=1554546
-      "virt-sysprep -a ipxwrapper-test-agent-1.qcow2 -v --operations machine-id",
+      "virt-sysprep -a ipxwrapper-test-agent.qcow2 -v --operations machine-id",
 
-      "sha256sum ipxwrapper-test-agent-1.qcow2 ipxwrapper-test-agent-2.qcow2 > SHA256SUMS",
+      "sha256sum ipxwrapper-test-agent.qcow2 > SHA256SUMS",
     ]
   }
 }
@@ -216,8 +152,6 @@ data "sshkey" "install" {}
 source qemu "debian" {
   iso_url      = "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2"
   iso_checksum = "file:https://cloud.debian.org/images/cloud/trixie/latest/SHA512SUMS"
-  # iso_url      = "https://cloud.debian.org/images/cloud/bookworm/20241004-1890/debian-12-genericcloud-amd64-20241004-1890.qcow2"
-  # iso_checksum = "file:https://cloud.debian.org/images/cloud/bookworm/20241004-1890/SHA512SUMS"
   disk_image   = true
 
   ssh_private_key_file = data.sshkey.install.private_key_path
@@ -235,7 +169,6 @@ source qemu "debian" {
   cpus        = 2
   memory      = 2048
   disk_size   = "16G"
-  disk_additional_size = [ "120G" ]
   accelerator = "kvm"
 
   headless = true

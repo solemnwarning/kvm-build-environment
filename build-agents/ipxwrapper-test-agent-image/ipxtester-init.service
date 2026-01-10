@@ -8,5 +8,9 @@ RemainAfterExit=true
 StandardOutput=journal
 User=buildkite-agent
 
+# Set ownership of the temp directory before starting ipxtester
+# ('+' before the command means it will run as root)
+ExecStartPre=+chown buildkite-agent /mnt/ipxtester-data/tmp/
+
 [Install]
 WantedBy=multi-user.target
