@@ -36,7 +36,7 @@ build {
     inline = [
       "ASSUME_ALWAYS_YES=yes pkg install \\",
       "  bash           \\",
-      "  botan2         \\",
+      "  botan3         \\",
       "  buildkite-agent \\",
       "  capstone4      \\",
       "  git            \\",
@@ -99,7 +99,7 @@ build {
 }
 
 source qemu "freebsd" {
-  iso_url      = "https://download.freebsd.org/ftp/releases/VM-IMAGES/14.2-RELEASE/amd64/Latest/FreeBSD-14.2-RELEASE-amd64-BASIC-CLOUDINIT.ufs.qcow2.xz"
+  iso_url      = "https://download.freebsd.org/ftp/releases/VM-IMAGES/14.3-RELEASE/amd64/Latest/FreeBSD-14.3-RELEASE-amd64-BASIC-CLOUDINIT-ufs.qcow2.xz"
   iso_checksum = "none"
   # iso_checksum = "file:https://download.freebsd.org/ftp/snapshots/VM-IMAGES/14.0-STABLE/amd64/Latest/CHECKSUM.SHA256"
   disk_image   = true
