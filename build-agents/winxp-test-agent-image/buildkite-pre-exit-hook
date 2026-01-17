@@ -11,4 +11,7 @@ then
 	http_proxy="" curl -X POST -s "http://rx100-power.build.solemnwarning.net/hard-off"
 	
 	rm -f "~/.test-machine-powered-on"
+	
+	# Wait for the machine to settle after powering off
+	sleep 10
 fi
