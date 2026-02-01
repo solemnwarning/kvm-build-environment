@@ -14,14 +14,6 @@ data "terraform_remote_state" "build_infrastructure" {
   }
 }
 
-resource "random_id" "suffix" {
-  byte_length = 4
-}
-
-locals {
-  hostname = "windows-build${ var.hostname_suffix }-${ random_id.suffix.hex }"
-}
-
 data "local_file" "image_version" {
   filename = "${ path.root }/windows-build-agent-image/builds/latest-version"
 }
@@ -29,6 +21,8 @@ data "local_file" "image_version" {
 locals {
   image_version = chomp(data.local_file.image_version.content)
   image_path    = "${ path.root }/windows-build-agent-image/builds/${ local.image_version }/windows-build-agent.qcow2"
+
+  output_image_name = "windows-build-agent-${ local.image_version }.qcow2"
 }
 
 resource "tls_private_key" "ccache_client_key" {
@@ -40,7 +34,7 @@ resource "tls_cert_request" "ccache_client_csr" {
   private_key_pem = tls_private_key.ccache_client_key.private_key_pem
 
   subject {
-    common_name = "${ local.hostname }.${ var.domain }"
+    common_name = "windows-build-agent"
   }
 }
 
@@ -59,29 +53,61 @@ resource "tls_locally_signed_cert" "ccache_client_cert" {
   ]
 }
 
-resource "libvirt_volume" "root" {
-  name   = "${ local.hostname }.${ var.domain }_root.qcow2"
-  pool   = var.storage_pool
-  source = local.image_path
-  format = "qcow2"
+# Create a symlink to the disk image in the template output directory.
+# This would be simpler as a local_file, but then we would have to have
+# multiple copies of the image floating around.
 
-  # Ensure disk is reset to initial state if cloud-init data is changed.
-  lifecycle {
-    replace_triggered_by = [
-      libvirt_cloudinit_disk.cloud_init.id,
-    ]
+resource "terraform_data" "disk_symlink" {
+  triggers_replace = [
+    abspath(local.image_path),
+    "${ var.template_dir }/${ local.output_image_name }",
+  ]
+
+  input = [
+    abspath(local.image_path),
+    "${ var.template_dir }/${ local.output_image_name }",
+  ]
+
+  provisioner "local-exec" {
+    environment = {
+      SOURCE = self.output[0]
+      DEST = self.output[1]
+    }
+
+    command = "mkdir -p \"$(dirname \"$DEST\")\" && ln -s \"$SOURCE\" \"$DEST\""
+  }
+
+  provisioner "local-exec" {
+    when       = destroy
+    on_failure = continue
+
+    environment = {
+      DEST = self.output[1]
+    }
+
+    command = "rm -f \"$DEST\""
   }
 }
 
-resource "libvirt_cloudinit_disk" "cloud_init" {
-  name = "${ local.hostname }.${ var.domain }_cloud-init.iso"
-  pool = var.storage_pool
+resource "local_file" "domain-xml" {
+  content  = templatefile("${ path.module }/windows-build-agent.xml.tftpl", {
+    hostname_suffix = var.hostname_suffix
+    domain          = var.domain
 
+    memory = var.memory
+    vcpu   = var.vcpu
+
+    image_name = local.output_image_name
+  })
+
+  filename = "${ var.template_dir }/windows-build-agent.xml"
+}
+
+resource "local_file" "user-data" {
   # Ensure user_data has DOS line endings for our horrible batch script to be
   # able to parse it correctly.
-  user_data  = replace(replace(
+  content = replace(replace(
     templatefile("${ path.module }/windows-build-agent.user-data.tftpl", {
-      hostname = "${ local.hostname }"
       spawn = var.spawn
       extra_tags = var.extra_tags
       git_cache_https_cert = data.terraform_remote_state.build_infrastructure.outputs.git_cache_https_cert
@@ -90,33 +116,6 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
       ccache_cache_client_cert = tls_locally_signed_cert.ccache_client_cert.cert_pem
       ccache_cache_client_key = tls_private_key.ccache_client_key.private_key_pem
   }), "\r", ""), "\n", "\r\n")
-}
 
-resource "libvirt_domain" "windows_build_agent" {
-  name    = "${ local.hostname }.${ var.domain }"
-  memory  = var.memory
-  vcpu    = var.vcpu
-  running = false
-
-  xml {
-    xslt = file("${ path.root }/windows-build-agent-deploy/windows-build-agent.domain.xsl")
-  }
-
-  # Destroy the VM when replacing the disk, otherwise it may be left running
-  # and the disk changed out from under it.
-  lifecycle {
-    replace_triggered_by = [
-      libvirt_volume.root.id,
-    ]
-  }
-
-  cloudinit = "${libvirt_cloudinit_disk.cloud_init.id}"
-
-  network_interface {
-    bridge = "dmz-build"
-  }
-
-  disk {
-    volume_id = "${libvirt_volume.root.id}"
-  }
+  filename = "${ var.template_dir }/cloud-init/user-data.TT"
 }

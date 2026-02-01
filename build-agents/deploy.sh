@@ -27,3 +27,13 @@ powerwake -w -t 300 vmhost03.lan.solemnwarning.net
 powerwake -w -t 300 vmhost04.lan.solemnwarning.net
 
 terraform apply $auto_approve
+
+rsync -rLtv --delete --delete-before output/vmhost01/          /srv/vm-templates/build-agents/ &
+rsync -rLtv --delete --delete-before output/vmhost02/ vmhost02:/srv/vm-templates/build-agents/ &
+rsync -rLtv --delete --delete-before output/vmhost03/ vmhost03:/srv/vm-templates/build-agents/ &
+rsync -rLtv --delete --delete-before output/vmhost04/ vmhost04:/srv/vm-templates/build-agents/ &
+
+wait -nf
+wait -nf
+wait -nf
+wait -nf

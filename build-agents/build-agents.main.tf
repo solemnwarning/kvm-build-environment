@@ -34,6 +34,9 @@ module "ipxwrapper_test_vmhost01" {
     libvirt = libvirt.vmhost01
   }
 
+  template_dir = "${path.root}/output/vmhost01/ipxwrapper-test-agent"
+
+  hostname_suffix = "-vm01"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -56,6 +59,9 @@ module "ipxwrapper_test_vmhost02" {
     libvirt = libvirt.vmhost02
   }
 
+  template_dir = "${path.root}/output/vmhost02/ipxwrapper-test-agent"
+
+  hostname_suffix = "-vm02"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -78,6 +84,9 @@ module "ipxwrapper_test_vmhost03" {
     libvirt = libvirt.vmhost03
   }
 
+  template_dir = "${path.root}/output/vmhost03/ipxwrapper-test-agent"
+
+  hostname_suffix = "-vm03"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -100,6 +109,9 @@ module "ipxwrapper_test_vmhost04" {
     libvirt = libvirt.vmhost04
   }
 
+  template_dir = "${path.root}/output/vmhost04/ipxwrapper-test-agent"
+
+  hostname_suffix = "-vm04"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -122,6 +134,9 @@ module "windows_build_vmhost01" {
     libvirt = libvirt.vmhost01
   }
 
+  template_dir = "${path.root}/output/vmhost01/windows-build-agent"
+
+  hostname_suffix = "-vm01"
   domain = "build.solemnwarning.net"
 
   memory = 16384
@@ -135,6 +150,9 @@ module "windows_build_vmhost02" {
     libvirt = libvirt.vmhost02
   }
 
+  template_dir = "${path.root}/output/vmhost02/windows-build-agent"
+
+  hostname_suffix = "-vm02"
   domain = "build.solemnwarning.net"
 
   memory = 16384
@@ -142,61 +160,35 @@ module "windows_build_vmhost02" {
   spawn  = 1
 }
 
-module "windows_build_vmhost03_a" {
+module "windows_build_vmhost03" {
   source    = "./windows-build-agent-deploy/"
   providers = {
     libvirt = libvirt.vmhost03
   }
 
-  hostname_suffix = "-a"
+  template_dir = "${path.root}/output/vmhost03/windows-build-agent"
+
+  hostname_suffix = "-vm03"
   domain = "build.solemnwarning.net"
 
-  memory     = 49152
-  vcpu       = 42
+  memory     = 32768
+  vcpu       = 28
   spawn      = 1
   extra_tags = "big=true"
 }
 
-module "windows_build_vmhost03_b" {
-  source    = "./windows-build-agent-deploy/"
-  providers = {
-    libvirt = libvirt.vmhost03
-  }
-
-  hostname_suffix = "-b"
-  domain = "build.solemnwarning.net"
-
-  memory     = 49152
-  vcpu       = 42
-  spawn      = 1
-  extra_tags = "big=true"
-}
-
-module "windows_build_vmhost04_a" {
+module "windows_build_vmhost04" {
   source    = "./windows-build-agent-deploy/"
   providers = {
     libvirt = libvirt.vmhost04
   }
 
-  hostname_suffix = "-a"
+  template_dir = "${path.root}/output/vmhost04/windows-build-agent"
+
+  hostname_suffix = "-vm04"
   domain = "build.solemnwarning.net"
 
-  memory     = 49152
-  vcpu       = 24
-  spawn      = 1
-  extra_tags = "big=true"
-}
-
-module "windows_build_vmhost04_b" {
-  source    = "./windows-build-agent-deploy/"
-  providers = {
-    libvirt = libvirt.vmhost04
-  }
-
-  hostname_suffix = "-b"
-  domain = "build.solemnwarning.net"
-
-  memory     = 49152
+  memory     = 32768
   vcpu       = 24
   spawn      = 1
   extra_tags = "big=true"
@@ -217,6 +209,9 @@ module "debian_build_vmhost01" {
     libvirt = libvirt.vmhost01
   }
 
+  template_dir = "${path.root}/output/vmhost01/debian-build-agent"
+
+  hostname_suffix = "-vm01"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -240,6 +235,9 @@ module "debian_build_vmhost02" {
     libvirt = libvirt.vmhost02
   }
 
+  template_dir = "${path.root}/output/vmhost02/debian-build-agent"
+
+  hostname_suffix = "-vm02"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -257,13 +255,15 @@ output "debian_build_vmhost02_root_password" {
     sensitive = true
 }
 
-module "debian_build_vmhost03_a" {
+module "debian_build_vmhost03" {
   source    = "./debian-build-agent-deploy/"
   providers = {
     libvirt = libvirt.vmhost03
   }
 
-  hostname_suffix = "-a"
+  template_dir = "${path.root}/output/vmhost03/debian-build-agent"
+
+  hostname_suffix = "-vm03"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -272,46 +272,24 @@ module "debian_build_vmhost03_a" {
 
   buildkite_user_ssh_key = tls_private_key.buildkite_user_ssh_key
 
-  memory = 49152
-  vcpu   = 42
+  memory = 32768
+  vcpu   = 28
 }
 
-output "debian_build_vmhost03_a_root_password" {
-    value = "${module.debian_build_vmhost03_a.root_password}"
+output "debian_build_vmhost03_root_password" {
+    value = "${module.debian_build_vmhost03.root_password}"
     sensitive = true
 }
 
-module "debian_build_vmhost03_b" {
-  source    = "./debian-build-agent-deploy/"
-  providers = {
-    libvirt = libvirt.vmhost03
-  }
-
-  hostname_suffix = "-b"
-  domain = "build.solemnwarning.net"
-
-  buildkite_agent_token = var.buildkite_agent_token
-  http_proxy_url = var.http_proxy_url
-  admin_ssh_keys = var.admin_ssh_keys
-
-  buildkite_user_ssh_key = tls_private_key.buildkite_user_ssh_key
-
-  memory = 49152
-  vcpu   = 42
-}
-
-output "debian_build_vmhost03_b_root_password" {
-    value = "${module.debian_build_vmhost03_b.root_password}"
-    sensitive = true
-}
-
-module "debian_build_vmhost04_a" {
+module "debian_build_vmhost04" {
   source    = "./debian-build-agent-deploy/"
   providers = {
     libvirt = libvirt.vmhost04
   }
 
-  hostname_suffix = "-a"
+  template_dir = "${path.root}/output/vmhost04/debian-build-agent"
+
+  hostname_suffix = "-vm04"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -320,36 +298,12 @@ module "debian_build_vmhost04_a" {
 
   buildkite_user_ssh_key = tls_private_key.buildkite_user_ssh_key
 
-  memory = 49152
+  memory = 32768
   vcpu   = 24
 }
 
-output "debian_build_vmhost04_a_root_password" {
-    value = "${module.debian_build_vmhost04_a.root_password}"
-    sensitive = true
-}
-
-module "debian_build_vmhost04_b" {
-  source    = "./debian-build-agent-deploy/"
-  providers = {
-    libvirt = libvirt.vmhost04
-  }
-
-  hostname_suffix = "-b"
-  domain = "build.solemnwarning.net"
-
-  buildkite_agent_token = var.buildkite_agent_token
-  http_proxy_url = var.http_proxy_url
-  admin_ssh_keys = var.admin_ssh_keys
-
-  buildkite_user_ssh_key = tls_private_key.buildkite_user_ssh_key
-
-  memory = 49152
-  vcpu   = 24
-}
-
-output "debian_build_vmhost04_b_root_password" {
-    value = "${module.debian_build_vmhost04_b.root_password}"
+output "debian_build_vmhost04_root_password" {
+    value = "${module.debian_build_vmhost04.root_password}"
     sensitive = true
 }
 
@@ -359,7 +313,9 @@ module "freebsd_build_vmhost01" {
     libvirt = libvirt.vmhost01
   }
 
-  hostname_suffix = ""
+  template_dir = "${path.root}/output/vmhost01/freebsd-build-agent"
+
+  hostname_suffix = "-vm01"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -381,7 +337,9 @@ module "freebsd_build_vmhost02" {
     libvirt = libvirt.vmhost02
   }
 
-  hostname_suffix = ""
+  template_dir = "${path.root}/output/vmhost02/freebsd-build-agent"
+
+  hostname_suffix = "-vm02"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -403,15 +361,17 @@ module "freebsd_build_vmhost03" {
     libvirt = libvirt.vmhost03
   }
 
-  hostname_suffix = ""
+  template_dir = "${path.root}/output/vmhost03/freebsd-build-agent"
+
+  hostname_suffix = "-vm03"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
   http_proxy_url = var.http_proxy_url
   admin_ssh_keys = var.admin_ssh_keys
 
-  memory = 49152
-  vcpu   = 42
+  memory = 16384
+  vcpu   = 12
 }
 
 output "freebsd_build_vmhost03_root_password" {
@@ -425,15 +385,17 @@ module "freebsd_build_vmhost04" {
     libvirt = libvirt.vmhost04
   }
 
-  hostname_suffix = ""
+  template_dir = "${path.root}/output/vmhost04/freebsd-build-agent"
+
+  hostname_suffix = "-vm04"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
   http_proxy_url = var.http_proxy_url
   admin_ssh_keys = var.admin_ssh_keys
 
-  memory = 49152
-  vcpu   = 24
+  memory = 16384
+  vcpu   = 12
 }
 
 output "freebsd_build_vmhost04_root_password" {

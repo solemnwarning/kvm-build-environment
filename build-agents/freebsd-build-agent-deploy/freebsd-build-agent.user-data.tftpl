@@ -1,6 +1,6 @@
 #cloud-config
-hostname: ${hostname}
-fqdn: ${hostname}.${domain}
+hostname: [% hostname %]
+fqdn: [% hostname %].${domain}
 
 timezone: "Europe/London"
 
@@ -12,20 +12,6 @@ users:
       %{ for key in admin_ssh_keys ~}
       - ${ key }
       %{ endfor ~}
-
-ssh_keys:
-  ecdsa_private: |
-    ${ indent(4, ssh_host_ecdsa.private_key_pem) }
-  ed25519_private: |
-    ${ indent(4, ssh_host_ed25519.private_key_openssh) }
-  rsa_private: |
-    ${ indent(4, ssh_host_rsa.private_key_pem) }
-
-ssh_genkeytypes: [rsa, ecdsa, ed25519]
-ssh_quiet_keygen: true
-ssh_publish_hostkeys:
-  enabled: true
-  blacklist: [dsa]
 
 bootcmd:
   - cat > /var/run/buildkite-agent.env <<'EOF'

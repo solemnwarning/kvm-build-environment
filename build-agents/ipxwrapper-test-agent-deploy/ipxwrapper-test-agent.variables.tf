@@ -1,6 +1,6 @@
-variable "storage_pool" {
+variable "hostname_suffix" {
   type = string
-  default = "default"
+  default = ""
 }
 
 variable "domain" {
@@ -31,4 +31,8 @@ variable "admin_ssh_keys" {
 variable "buildkite_agent_token" {
   type = string
   sensitive = true
+}
+
+variable "template_dir" {
+  type = string
 }

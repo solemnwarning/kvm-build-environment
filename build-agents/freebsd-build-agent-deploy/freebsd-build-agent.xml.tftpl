@@ -1,0 +1,69 @@
+[% hostname = 'freebsd-build${hostname_suffix}-' _ randstr(8) %]
+
+<domain type="kvm">
+  <name>[% hostname %].${ domain }</name>
+  <memory unit="MiB">${ memory }</memory>
+  <vcpu placement="static">${ vcpu }</vcpu>
+
+  <os>
+    <type arch="x86_64" machine="pc-i440fx-7.2">hvm</type>
+    <boot dev="hd"/>
+  </os>
+
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
+
+  <clock offset="utc"/>
+
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+
+  <devices>
+    <disk type="file" device="disk">
+      <driver name="qemu" type="qcow2"/>
+      <source file="[% cowfile('${image_name}', 'qcow2') %]"/>
+      <target dev="vda" bus="virtio"/>
+    </disk>
+
+    <disk type="file" device="cdrom">
+      <driver name="qemu" type="raw"/>
+      <source file="[% mkiso('cloud-init', 'CIDATA') %]"/>
+      <target dev="hdd" bus="ide"/>
+      <readonly/>
+    </disk>
+
+    <controller type="virtio-serial" index="0">
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x04" function="0x0"/>
+    </controller>
+
+    <interface type="bridge">
+      <source bridge="dmz-build"/>
+      <model type="virtio"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x0"/>
+    </interface>
+
+    <channel type="unix">
+      <target type="virtio" name="org.qemu.guest_agent.0"/>
+      <address type="virtio-serial" controller="0" bus="0" port="1"/>
+    </channel>
+
+    <input type="keyboard" bus="ps2"/>
+
+    <graphics type="spice" autoport="yes">
+      <listen type="address"/>
+    </graphics>
+
+    <video>
+      <model type="cirrus" vram="16384" heads="1" primary="yes"/>
+    </video>
+
+    <rng model="virtio">
+      <backend model="random">/dev/urandom</backend>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x07" function="0x0"/>
+    </rng>
+  </devices>
+</domain>

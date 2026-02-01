@@ -14,14 +14,6 @@ data "terraform_remote_state" "build_infrastructure" {
   }
 }
 
-resource "random_id" "suffix" {
-  byte_length = 4
-}
-
-locals {
-  hostname = "debian-build${ var.hostname_suffix }-${ random_id.suffix.hex }"
-}
-
 resource "random_password" "root_password" {
   length = 12
   special = false
@@ -30,20 +22,6 @@ resource "random_password" "root_password" {
 output root_password {
   value     = random_password.root_password.result
   sensitive = true
-}
-
-resource "tls_private_key" "ssh_host_rsa" {
-  algorithm = "RSA"
-  rsa_bits = 4096
-}
-
-resource "tls_private_key" "ssh_host_ecdsa" {
-  algorithm = "ECDSA"
-  ecdsa_curve = "P384"
-}
-
-resource "tls_private_key" "ssh_host_ed25519" {
-  algorithm = "ED25519"
 }
 
 resource "tls_private_key" "https_key" {
@@ -58,6 +36,8 @@ data "local_file" "image_version" {
 locals {
   image_version = chomp(data.local_file.image_version.content)
   image_path    = "${ path.root }/debian-build-agent-image/builds/${ local.image_version }/debian-build-agent.qcow2"
+
+  output_image_name = "debian-build-agent-${ local.image_version }.qcow2"
 }
 
 resource "tls_private_key" "ccache_client_key" {
@@ -69,7 +49,7 @@ resource "tls_cert_request" "ccache_client_csr" {
   private_key_pem = tls_private_key.ccache_client_key.private_key_pem
 
   subject {
-    common_name = "${ local.hostname }.${ var.domain }"
+    common_name = "debian-build-agent"
   }
 }
 
@@ -88,35 +68,71 @@ resource "tls_locally_signed_cert" "ccache_client_cert" {
   ]
 }
 
-resource "libvirt_volume" "root" {
-  name   = "${ local.hostname }.${ var.domain }_root.qcow2"
-  pool   = var.storage_pool
-  source = local.image_path
-  format = "qcow2"
+# Create a symlink to the disk image in the template output directory.
+# This would be simpler as a local_file, but then we would have to have
+# multiple copies of the image floating around.
 
-  # Ensure disk is reset to initial state if cloud-init data is changed.
-  lifecycle {
-    replace_triggered_by = [
-      libvirt_cloudinit_disk.cloud_init.id,
-    ]
+resource "terraform_data" "disk_symlink" {
+  triggers_replace = [
+    abspath(local.image_path),
+    "${ var.template_dir }/${ local.output_image_name }",
+  ]
+
+  input = [
+    abspath(local.image_path),
+    "${ var.template_dir }/${ local.output_image_name }",
+  ]
+
+  provisioner "local-exec" {
+    environment = {
+      SOURCE = self.output[0]
+      DEST = self.output[1]
+    }
+
+    command = "mkdir -p \"$(dirname \"$DEST\")\" && ln -s \"$SOURCE\" \"$DEST\""
+  }
+
+  provisioner "local-exec" {
+    when       = destroy
+    on_failure = continue
+
+    environment = {
+      DEST = self.output[1]
+    }
+
+    command = "rm -f \"$DEST\""
   }
 }
 
-resource "libvirt_cloudinit_disk" "cloud_init" {
-  name = "${ local.hostname }.${ var.domain }_cloud-init.iso"
-  pool = var.storage_pool
+resource "local_file" "domain-xml" {
+  content  = templatefile("${ path.module }/debian-build-agent.xml.tftpl", {
+    hostname_suffix = var.hostname_suffix
+    domain          = var.domain
 
-  network_config = templatefile("${ path.module }/debian-build-agent.network-config.tftpl", {})
+    memory = var.memory
+    vcpu   = var.vcpu
 
-  user_data  = templatefile("${ path.module }/debian-build-agent.user-data.tftpl", {
-    hostname = local.hostname
-    domain   = var.domain
+    image_name = local.output_image_name
+  })
+
+  filename = "${ var.template_dir }/debian-build-agent.xml"
+}
+
+resource "local_file" "meta-data" {
+  content = ""
+  filename = "${ var.template_dir }/cloud-init/meta-data"
+}
+
+resource "local_file" "network-config" {
+  content = templatefile("${ path.module }/debian-build-agent.network-config.tftpl", {})
+  filename = "${ var.template_dir }/cloud-init/network-config"
+}
+
+resource "local_file" "user-data" {
+  content  = templatefile("${ path.module }/debian-build-agent.user-data.tftpl", {
+    domain = var.domain
 
     root_password = random_password.root_password
-
-    ssh_host_ecdsa   = tls_private_key.ssh_host_ecdsa
-    ssh_host_ed25519 = tls_private_key.ssh_host_ed25519
-    ssh_host_rsa     = tls_private_key.ssh_host_rsa
 
     buildkite_agent_token  = var.buildkite_agent_token
     http_proxy_url         = var.http_proxy_url
@@ -127,35 +143,6 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
     ccache_cache_client_cert = tls_locally_signed_cert.ccache_client_cert.cert_pem
     ccache_cache_client_key  = tls_private_key.ccache_client_key.private_key_pem
   })
-}
 
-resource "libvirt_domain" "domain" {
-  name = "${ local.hostname }.${ var.domain }"
-
-  memory  = var.memory
-  vcpu    = var.vcpu
-  running = false
-
-  cpu {
-    # Needed for nested virtualisation
-    mode = "host-passthrough"
-  }
-
-  # Destroy the VM when replacing the disk, otherwise it may be left running
-  # and the disk changed out from under it.
-  lifecycle {
-    replace_triggered_by = [
-      libvirt_volume.root.id,
-    ]
-  }
-
-  cloudinit = "${libvirt_cloudinit_disk.cloud_init.id}"
-
-  network_interface {
-    bridge = "dmz-build"
-  }
-
-  disk {
-    volume_id = "${libvirt_volume.root.id}"
-  }
+  filename = "${ var.template_dir }/cloud-init/user-data.TT"
 }

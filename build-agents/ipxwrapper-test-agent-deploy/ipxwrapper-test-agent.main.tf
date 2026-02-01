@@ -6,14 +6,6 @@ terraform {
   }
 }
 
-resource "random_id" "suffix" {
-  byte_length = 4
-}
-
-locals {
-  hostname = "ipxwrapper-test-${ random_id.suffix.hex }"
-}
-
 resource "random_password" "root_password" {
   length = 12
   special = false
@@ -22,25 +14,6 @@ resource "random_password" "root_password" {
 output root_password {
   value     = random_password.root_password.result
   sensitive = true
-}
-
-resource "tls_private_key" "ssh_host_rsa" {
-  algorithm = "RSA"
-  rsa_bits = 4096
-}
-
-resource "tls_private_key" "ssh_host_ecdsa" {
-  algorithm = "ECDSA"
-  ecdsa_curve = "P384"
-}
-
-resource "tls_private_key" "ssh_host_ed25519" {
-  algorithm = "ED25519"
-}
-
-resource "tls_private_key" "https_key" {
-  algorithm = "RSA"
-  rsa_bits = 3072
 }
 
 data "local_file" "disk1_image_version" {
@@ -53,88 +26,118 @@ data "local_file" "disk2_image_name" {
 
 locals {
   disk1_image_version = chomp(data.local_file.disk1_image_version.content)
+  disk1_image_name    = "ipxwrapper-test-agent-${ local.disk1_image_version }.qcow2"
   disk1_image_path    = "${ path.root }/ipxwrapper-test-agent-image/builds/ipxwrapper-test-agent/${ local.disk1_image_version }/ipxwrapper-test-agent.qcow2"
 
   disk2_image_name = chomp(data.local_file.disk2_image_name.content)
   disk2_image_path = "${ path.root }/ipxwrapper-test-agent-image/builds/ipxwrapper-test-images/${ local.disk2_image_name }"
 }
 
-resource "libvirt_volume" "disk1" {
-  name   = "${ local.hostname }.${ var.domain }_disk1.qcow2"
-  pool   = var.storage_pool
-  source = local.disk1_image_path
-  format = "qcow2"
+# Create a symlink to the disk image in the template output directory.
+# This would be simpler as a local_file, but then we would have to have
+# multiple copies of the image floating around.
 
-  # Ensure disk is reset to initial state if cloud-init data is changed.
-  lifecycle {
-    replace_triggered_by = [
-      libvirt_cloudinit_disk.cloud_init.id,
-    ]
+resource "terraform_data" "disk1_symlink" {
+  triggers_replace = [
+    abspath(local.disk1_image_path),
+    "${ var.template_dir }/${ local.disk1_image_name }",
+  ]
+
+  input = [
+    abspath(local.disk1_image_path),
+    "${ var.template_dir }/${ local.disk1_image_name }",
+  ]
+
+  provisioner "local-exec" {
+    environment = {
+      SOURCE = self.output[0]
+      DEST = self.output[1]
+    }
+
+    command = "mkdir -p \"$(dirname \"$DEST\")\" && ln -s \"$SOURCE\" \"$DEST\""
+  }
+
+  provisioner "local-exec" {
+    when       = destroy
+    on_failure = continue
+
+    environment = {
+      DEST = self.output[1]
+    }
+
+    command = "rm -f \"$DEST\""
   }
 }
 
-resource "libvirt_volume" "disk2" {
-  name   = "${ local.hostname }.${ var.domain }_disk2.qcow2"
-  pool   = var.storage_pool
-  source = local.disk2_image_path
-  format = "qcow2"
+resource "terraform_data" "disk2_symlink" {
+  triggers_replace = [
+    abspath(local.disk2_image_path),
+    "${ var.template_dir }/${ local.disk2_image_name }",
+  ]
+
+  input = [
+    abspath(local.disk2_image_path),
+    "${ var.template_dir }/${ local.disk2_image_name }",
+  ]
+
+  provisioner "local-exec" {
+    environment = {
+      SOURCE = self.output[0]
+      DEST = self.output[1]
+    }
+
+    command = "mkdir -p \"$(dirname \"$DEST\")\" && ln -s \"$SOURCE\" \"$DEST\""
+  }
+
+  provisioner "local-exec" {
+    when       = destroy
+    on_failure = continue
+
+    environment = {
+      DEST = self.output[1]
+    }
+
+    command = "rm -f \"$DEST\""
+  }
 }
 
-resource "libvirt_cloudinit_disk" "cloud_init" {
-  name = "${ local.hostname }.${ var.domain }_cloud-init.iso"
-  pool = var.storage_pool
+resource "local_file" "domain-xml" {
+  content  = templatefile("${ path.module }/ipxwrapper-test-agent.xml.tftpl", {
+    hostname_suffix = var.hostname_suffix
+    domain          = var.domain
 
-  network_config = templatefile("${ path.module }/ipxwrapper-test-agent.network-config.tftpl", {})
+    memory = var.memory
+    vcpu   = var.vcpu
 
-  user_data  = templatefile("${ path.module }/ipxwrapper-test-agent.user-data.tftpl", {
-    hostname = local.hostname
+    disk1_name = local.disk1_image_name
+    disk2_name = local.disk2_image_name
+  })
+
+  filename = "${ var.template_dir }/ipxwrapper-test-agent.xml"
+}
+
+resource "local_file" "meta-data" {
+  content = ""
+  filename = "${ var.template_dir }/cloud-init/meta-data"
+}
+
+resource "local_file" "network-config" {
+  content = templatefile("${ path.module }/ipxwrapper-test-agent.network-config.tftpl", {})
+  filename = "${ var.template_dir }/cloud-init/network-config"
+}
+
+resource "local_file" "user-data" {
+  content = templatefile("${ path.module }/ipxwrapper-test-agent.user-data.tftpl", {
+    hostname_suffix = var.hostname_suffix
     domain   = var.domain
 
     root_password = random_password.root_password
-
-    ssh_host_ecdsa   = tls_private_key.ssh_host_ecdsa
-    ssh_host_ed25519 = tls_private_key.ssh_host_ed25519
-    ssh_host_rsa     = tls_private_key.ssh_host_rsa
 
     buildkite_agent_token = var.buildkite_agent_token
     buildkite_agent_spawn = var.spawn
     http_proxy_url        = var.http_proxy_url
     admin_ssh_keys        = var.admin_ssh_keys
   })
-}
 
-resource "libvirt_domain" "domain" {
-  name = "${ local.hostname }.${ var.domain }"
-
-  memory  = var.memory
-  vcpu    = var.vcpu
-  running = false
-
-  cpu {
-    # Needed for nested virtualisation
-    mode = "host-passthrough"
-  }
-
-  # Destroy the VM when replacing the disk, otherwise it may be left running
-  # and the disk changed out from under it.
-  lifecycle {
-    replace_triggered_by = [
-      libvirt_volume.disk1.id,
-      libvirt_volume.disk2.id,
-    ]
-  }
-
-  cloudinit = "${libvirt_cloudinit_disk.cloud_init.id}"
-
-  network_interface {
-    bridge = "dmz-build"
-  }
-
-  disk {
-    volume_id = "${libvirt_volume.disk1.id}"
-  }
-
-  disk {
-    volume_id = "${libvirt_volume.disk2.id}"
-  }
+  filename = "${ var.template_dir }/cloud-init/user-data.TT"
 }

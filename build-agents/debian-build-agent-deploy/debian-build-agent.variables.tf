@@ -1,8 +1,3 @@
-variable "storage_pool" {
-  type = string
-  default = "default"
-}
-
 variable "hostname_suffix" {
   type = string
   default = ""
@@ -39,4 +34,8 @@ variable "buildkite_user_ssh_key" {
     private_key_openssh = string
   })
   sensitive = true
+}
+
+variable "template_dir" {
+  type = string
 }

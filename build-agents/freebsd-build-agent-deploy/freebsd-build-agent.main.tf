@@ -24,25 +24,6 @@ output root_password {
   sensitive = true
 }
 
-resource "tls_private_key" "ssh_host_rsa" {
-  algorithm = "RSA"
-  rsa_bits = 4096
-}
-
-resource "tls_private_key" "ssh_host_ecdsa" {
-  algorithm = "ECDSA"
-  ecdsa_curve = "P384"
-}
-
-resource "tls_private_key" "ssh_host_ed25519" {
-  algorithm = "ED25519"
-}
-
-resource "tls_private_key" "https_key" {
-  algorithm = "RSA"
-  rsa_bits = 3072
-}
-
 data "local_file" "image_version" {
   filename = "${ path.root }/freebsd-build-agent-image/builds/latest-version"
 }
@@ -50,64 +31,81 @@ data "local_file" "image_version" {
 locals {
   image_version = chomp(data.local_file.image_version.content)
   image_path    = "${ path.root }/freebsd-build-agent-image/builds/${ local.image_version }/freebsd-build-agent.qcow2"
+
+  output_image_name = "freebsd-build-agent-${ local.image_version }.qcow2"
 }
 
-resource "libvirt_volume" "root" {
-  name   = "${ local.hostname }.${ var.domain }_root.qcow2"
-  pool   = var.storage_pool
-  source = local.image_path
-  format = "qcow2"
+# Create a symlink to the disk image in the template output directory.
+# This would be simpler as a local_file, but then we would have to have
+# multiple copies of the image floating around.
 
-  # Ensure disk is reset to initial state if cloud-init data is changed.
-  lifecycle {
-    replace_triggered_by = [
-      libvirt_cloudinit_disk.cloud_init.id,
-    ]
+resource "terraform_data" "disk_symlink" {
+  triggers_replace = [
+    abspath(local.image_path),
+    "${ var.template_dir }/${ local.output_image_name }",
+  ]
+
+  input = [
+    abspath(local.image_path),
+    "${ var.template_dir }/${ local.output_image_name }",
+  ]
+
+  provisioner "local-exec" {
+    environment = {
+      SOURCE = self.output[0]
+      DEST = self.output[1]
+    }
+
+    command = "mkdir -p \"$(dirname \"$DEST\")\" && ln -s \"$SOURCE\" \"$DEST\""
+  }
+
+  provisioner "local-exec" {
+    when       = destroy
+    on_failure = continue
+
+    environment = {
+      DEST = self.output[1]
+    }
+
+    command = "rm -f \"$DEST\""
   }
 }
 
-resource "libvirt_cloudinit_disk" "cloud_init" {
-  name = "${ local.hostname }.${ var.domain }_cloud-init.iso"
-  pool = var.storage_pool
+resource "local_file" "domain-xml" {
+  content  = templatefile("${ path.module }/freebsd-build-agent.xml.tftpl", {
+    hostname_suffix = var.hostname_suffix
+    domain          = var.domain
 
-  user_data  = templatefile("${ path.module }/freebsd-build-agent.user-data.tftpl", {
+    memory = var.memory
+    vcpu   = var.vcpu
+
+    image_name = local.output_image_name
+  })
+
+  filename = "${ var.template_dir }/freebsd-build-agent.xml"
+}
+
+resource "local_file" "meta-data" {
+  content = ""
+  filename = "${ var.template_dir }/cloud-init/meta-data"
+}
+
+resource "local_file" "network-config" {
+  content = ""
+  filename = "${ var.template_dir }/cloud-init/network-config"
+}
+
+resource "local_file" "user-data" {
+  content = templatefile("${ path.module }/freebsd-build-agent.user-data.tftpl", {
     hostname = local.hostname
     domain   = var.domain
 
     root_password = random_password.root_password
 
-    ssh_host_ecdsa   = tls_private_key.ssh_host_ecdsa
-    ssh_host_ed25519 = tls_private_key.ssh_host_ed25519
-    ssh_host_rsa     = tls_private_key.ssh_host_rsa
-
     buildkite_agent_token  = var.buildkite_agent_token
     http_proxy_url         = var.http_proxy_url
     admin_ssh_keys         = var.admin_ssh_keys
   })
-}
 
-resource "libvirt_domain" "domain" {
-  name = "${ local.hostname }.${ var.domain }"
-
-  memory  = var.memory
-  vcpu    = var.vcpu
-  running = false
-
-  # Destroy the VM when replacing the disk, otherwise it may be left running
-  # and the disk changed out from under it.
-  lifecycle {
-    replace_triggered_by = [
-      libvirt_volume.root.id,
-    ]
-  }
-
-  cloudinit = "${libvirt_cloudinit_disk.cloud_init.id}"
-
-  network_interface {
-    bridge = "dmz-build"
-  }
-
-  disk {
-    volume_id = "${libvirt_volume.root.id}"
-  }
+  filename = "${ var.template_dir }/cloud-init/user-data.TT"
 }

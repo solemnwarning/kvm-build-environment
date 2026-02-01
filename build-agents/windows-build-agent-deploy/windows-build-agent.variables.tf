@@ -1,8 +1,3 @@
-variable "storage_pool" {
-  type = string
-  default = "default"
-}
-
 variable "hostname_suffix" {
   type = string
   default = ""
@@ -27,4 +22,8 @@ variable "spawn" {
 variable "extra_tags" {
   type = string
   default = "NONE"
+}
+
+variable "template_dir" {
+  type = string
 }
