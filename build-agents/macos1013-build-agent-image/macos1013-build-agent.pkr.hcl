@@ -17,11 +17,6 @@ variable "output_dir" {
   default = "output/"
 }
 
-variable "uefi_firmware" {
-  type    = string
-  default = "/usr/share/OVMF/OVMF_CODE.fd"
-}
-
 locals {
   buildkite_url = "https://github.com/buildkite/agent/releases/download/v3.35.2/buildkite-agent-darwin-amd64-3.35.2.tar.gz"
   buildkite_tar = basename(local.buildkite_url)
@@ -189,10 +184,11 @@ build {
     keep_input_artifact = true
     inline = [
       "cp ${var.base_dir}/OpenCore.qcow2 ${var.output_dir}/",
+      "cp ${var.base_dir}/OVMF_CODE.fd ${var.output_dir}/",
       "cp ${var.base_dir}/OVMF_VARS.fd ${var.output_dir}/",
 
       "cd ${var.output_dir}/",
-      "sha256sum macos.qcow2 OpenCore.qcow2 OVMF_VARS.fd > SHA256SUMS",
+      "sha256sum macos.qcow2 OpenCore.qcow2 OVMF_CODE.fd OVMF_VARS.fd > SHA256SUMS",
     ]
   }
 }
@@ -214,7 +210,7 @@ source qemu "macos" {
   accelerator = "kvm"
 
   efi_boot         = true
-  efi_drop_efivars = false
+  efi_drop_efivars = true
 
   qemuargs = [
     [ "-device", "isa-applesmc,osk=ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc" ],
@@ -237,8 +233,8 @@ source qemu "macos" {
     [ "-drive", "if=none,id=disk4,format=qcow2,file=${var.output_dir}/macos.qcow2,cache=unsafe,discard=unmap,detect-zeroes=unmap" ],
     [ "-device", "ide-hd,drive=disk4,bus=ahci.4,rotation_rate=1" ],
 
-    [ "-drive", "if=pflash,format=raw,readonly=true,file=${var.uefi_firmware}" ],
-    [ "-drive", "if=pflash,format=raw,readonly=true,file=${var.base_dir}/OVMF_VARS.fd" ],
+    [ "-drive", "if=pflash,format=raw,readonly=true,file=${var.base_dir}/OVMF_CODE.fd" ],
+    [ "-drive", "if=pflash,format=raw,file=${var.base_dir}/OVMF_VARS.fd" ],
   ]
 
   # Comment this line to enable the local QEMU display.

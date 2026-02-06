@@ -1,6 +1,6 @@
 #cloud-config
-hostname: ${hostname}
-fqdn: ${hostname}.${domain}
+hostname: [% hostname %]
+fqdn: [% hostname %].${domain}
 
 users:
   - name: ${ admin_username }

@@ -478,6 +478,9 @@ module "macos1013_build_vmhost01" {
     libvirt = libvirt.vmhost01
   }
 
+  template_dir = "${path.root}/output/vmhost01/macos1013-build-agent"
+
+  hostname_suffix = "-vm01"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -495,6 +498,9 @@ module "macos1013_build_vmhost02" {
     libvirt = libvirt.vmhost02
   }
 
+  template_dir = "${path.root}/output/vmhost02/macos1013-build-agent"
+
+  hostname_suffix = "-vm02"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -512,6 +518,9 @@ module "macos14_build_vmhost01" {
     libvirt = libvirt.vmhost01
   }
 
+  template_dir = "${path.root}/output/vmhost01/macos14-build-agent"
+
+  hostname_suffix = "-vm01"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
@@ -529,6 +538,9 @@ module "macos14_build_vmhost02" {
     libvirt = libvirt.vmhost02
   }
 
+  template_dir = "${path.root}/output/vmhost02/macos14-build-agent"
+
+  hostname_suffix = "-vm02"
   domain = "build.solemnwarning.net"
 
   buildkite_agent_token = var.buildkite_agent_token
