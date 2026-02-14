@@ -14,16 +14,6 @@ locals {
   hostname = "freebsd-build${ var.hostname_suffix }-${ random_id.suffix.hex }"
 }
 
-resource "random_password" "root_password" {
-  length = 12
-  special = false
-}
-
-output root_password {
-  value     = random_password.root_password.result
-  sensitive = true
-}
-
 data "local_file" "image_version" {
   filename = "${ path.root }/freebsd-build-agent-image/builds/latest-version"
 }
@@ -99,8 +89,6 @@ resource "local_file" "user-data" {
   content = templatefile("${ path.module }/freebsd-build-agent.user-data.tftpl", {
     hostname = local.hostname
     domain   = var.domain
-
-    root_password = random_password.root_password
 
     buildkite_agent_token  = var.buildkite_agent_token
     http_proxy_url         = var.http_proxy_url

@@ -6,16 +6,6 @@ terraform {
   }
 }
 
-resource "random_password" "root_password" {
-  length = 12
-  special = false
-}
-
-output root_password {
-  value     = random_password.root_password.result
-  sensitive = true
-}
-
 data "local_file" "disk1_image_version" {
   filename = "${ path.root }/ipxwrapper-test-agent-image/builds/ipxwrapper-test-agent/latest-version"
 }
@@ -130,8 +120,6 @@ resource "local_file" "user-data" {
   content = templatefile("${ path.module }/ipxwrapper-test-agent.user-data.tftpl", {
     hostname_suffix = var.hostname_suffix
     domain   = var.domain
-
-    root_password = random_password.root_password
 
     buildkite_agent_token = var.buildkite_agent_token
     buildkite_agent_spawn = var.spawn

@@ -59,11 +59,6 @@ module "vcpkg_cache" {
   admin_ssh_keys = var.admin_ssh_keys
 }
 
-output "vcpkg_cache_root_password" {
-    value = "${module.vcpkg_cache.root_password}"
-    sensitive = true
-}
-
 output "vcpkg_cache_https_cert" {
     value = "${module.vcpkg_cache.https_cert}"
 }
@@ -92,11 +87,6 @@ module "git_cache" {
   admin_ssh_keys = var.admin_ssh_keys
 }
 
-output "git_cache_root_password" {
-    value = "${module.git_cache.root_password}"
-    sensitive = true
-}
-
 output "git_cache_https_cert" {
     value = "${module.git_cache.https_cert}"
 }
@@ -122,11 +112,6 @@ module "ccache_cache" {
   dns_server = "172.24.128.1"
 
   admin_ssh_keys = var.admin_ssh_keys
-}
-
-output "ccache_cache_root_password" {
-    value = "${module.ccache_cache.root_password}"
-    sensitive = true
 }
 
 output "ccache_cache_https_cert" {

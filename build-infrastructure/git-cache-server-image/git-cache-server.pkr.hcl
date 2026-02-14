@@ -86,6 +86,14 @@ build {
       "systemctl daemon-reload",
       "systemctl enable git-daemon.service",
       "systemctl enable update-git-mirrors.timer",
+
+      # Enable password-less login on the console.
+      "sed -i -e '/# Standard Un\\*x authentication./i # Enable passwordless login on the console\\nauth sufficient pam_securetty.so\\n' /etc/pam.d/login",
+      "for i in $(seq 1 6); do echo tty$i; done > /etc/securetty",
+
+      # Restore the normal GRUB timeout for debugging provisioning issues.
+      "rm /etc/default/grub.d/15_timeout.cfg",
+      "update-grub",
     ]
   }
 
@@ -136,7 +144,8 @@ source qemu "debian" {
   ssh_username     = "root"
   ssh_wait_timeout = "1000s"
 
-  shutdown_command = "/sbin/shutdown -hP now"
+  # Delete and disable root's password to avoid it being used.
+  shutdown_command = "passwd -d root && passwd -l root && /sbin/shutdown -hP now"
 
   # Builds a compact image
   disk_discard       = "unmap"

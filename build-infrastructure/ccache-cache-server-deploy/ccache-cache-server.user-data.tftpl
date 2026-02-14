@@ -6,9 +6,6 @@ timezone: "Europe/London"
 
 users:
   - name: root
-    lock_passwd: false
-    hashed_passwd: ${root_password.bcrypt_hash}
-    # plain_text_passwd: root
     ssh_authorized_keys:
       %{ for key in admin_ssh_keys ~}
       - ${ key }

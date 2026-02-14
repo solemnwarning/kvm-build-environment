@@ -41,6 +41,7 @@ build {
       "  capstone4      \\",
       "  git            \\",
       "  gmake          \\",
+      "  gsed           \\",
       "  jansson        \\",
       "  jq             \\",
       "  lua53          \\",
@@ -64,9 +65,18 @@ build {
 
       "echo buildkite_enable=YES              >> /etc/rc.conf.local",
       "echo buildkite_account=buildkite-agent >> /etc/rc.conf.local",
+
+      # Enable password-less login on the console.
+      "gsed -Ei -e '/auth[ \t]+include[ \t]+system/i auth\t\tsufficient\tpam_exec.so  /usr/lib/pam_securetty_auth.sh' /etc/pam.d/login",
+      "for i in $(seq 0 5); do echo ttyv$i; done > /etc/securetty",
     ]
 
     timeout = "10m"
+  }
+
+  provisioner "file" {
+    source = "pam_securetty_auth.sh"
+    destination = "/usr/lib/pam_securetty_auth.sh"
   }
 
   provisioner "file" {

@@ -14,16 +14,6 @@ locals {
   hostname = "copr-cli${ var.hostname_suffix }-${ random_id.suffix.hex }"
 }
 
-resource "random_password" "root_password" {
-  length = 12
-  special = false
-}
-
-output root_password {
-  value     = random_password.root_password.result
-  sensitive = true
-}
-
 resource "tls_private_key" "ssh_host_rsa" {
   algorithm = "RSA"
   rsa_bits = 4096
@@ -70,8 +60,6 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
   user_data  = templatefile("${ path.module }/copr-cli-agent.user-data.tftpl", {
     hostname = local.hostname
     domain   = var.domain
-
-    root_password = random_password.root_password
 
     ssh_host_ecdsa   = tls_private_key.ssh_host_ecdsa
     ssh_host_ed25519 = tls_private_key.ssh_host_ed25519

@@ -48,11 +48,6 @@ module "ipxwrapper_test_vmhost01" {
   spawn = 1
 }
 
-output "ipxwrapper_test_vmhost01_root_password" {
-    value = "${module.ipxwrapper_test_vmhost01.root_password}"
-    sensitive = true
-}
-
 module "ipxwrapper_test_vmhost02" {
   source    = "./ipxwrapper-test-agent-deploy/"
   providers = {
@@ -71,11 +66,6 @@ module "ipxwrapper_test_vmhost02" {
   memory = 16384
   vcpu = 8
   spawn = 1
-}
-
-output "ipxwrapper_test_vmhost02_root_password" {
-    value = "${module.ipxwrapper_test_vmhost02.root_password}"
-    sensitive = true
 }
 
 module "ipxwrapper_test_vmhost03" {
@@ -98,11 +88,6 @@ module "ipxwrapper_test_vmhost03" {
   spawn = 4
 }
 
-output "ipxwrapper_test_vmhost03_root_password" {
-    value = "${module.ipxwrapper_test_vmhost03.root_password}"
-    sensitive = true
-}
-
 module "ipxwrapper_test_vmhost04" {
   source    = "./ipxwrapper-test-agent-deploy/"
   providers = {
@@ -121,11 +106,6 @@ module "ipxwrapper_test_vmhost04" {
   memory = 65536
   vcpu = 28
   spawn = 4
-}
-
-output "ipxwrapper_test_vmhost04_root_password" {
-    value = "${module.ipxwrapper_test_vmhost04.root_password}"
-    sensitive = true
 }
 
 module "windows_build_vmhost01" {
@@ -224,11 +204,6 @@ module "debian_build_vmhost01" {
   vcpu   = 8
 }
 
-output "debian_build_vmhost01_root_password" {
-    value = "${module.debian_build_vmhost01.root_password}"
-    sensitive = true
-}
-
 module "debian_build_vmhost02" {
   source    = "./debian-build-agent-deploy/"
   providers = {
@@ -248,11 +223,6 @@ module "debian_build_vmhost02" {
 
   memory = 16384
   vcpu   = 8
-}
-
-output "debian_build_vmhost02_root_password" {
-    value = "${module.debian_build_vmhost02.root_password}"
-    sensitive = true
 }
 
 module "debian_build_vmhost03" {
@@ -276,11 +246,6 @@ module "debian_build_vmhost03" {
   vcpu   = 28
 }
 
-output "debian_build_vmhost03_root_password" {
-    value = "${module.debian_build_vmhost03.root_password}"
-    sensitive = true
-}
-
 module "debian_build_vmhost04" {
   source    = "./debian-build-agent-deploy/"
   providers = {
@@ -302,11 +267,6 @@ module "debian_build_vmhost04" {
   vcpu   = 24
 }
 
-output "debian_build_vmhost04_root_password" {
-    value = "${module.debian_build_vmhost04.root_password}"
-    sensitive = true
-}
-
 module "freebsd_build_vmhost01" {
   source    = "./freebsd-build-agent-deploy/"
   providers = {
@@ -324,11 +284,6 @@ module "freebsd_build_vmhost01" {
 
   memory = 16384
   vcpu   = 8
-}
-
-output "freebsd_build_vmhost01_root_password" {
-    value = "${module.freebsd_build_vmhost01.root_password}"
-    sensitive = true
 }
 
 module "freebsd_build_vmhost02" {
@@ -350,11 +305,6 @@ module "freebsd_build_vmhost02" {
   vcpu   = 8
 }
 
-output "freebsd_build_vmhost02_root_password" {
-    value = "${module.freebsd_build_vmhost02.root_password}"
-    sensitive = true
-}
-
 module "freebsd_build_vmhost03" {
   source    = "./freebsd-build-agent-deploy/"
   providers = {
@@ -372,11 +322,6 @@ module "freebsd_build_vmhost03" {
 
   memory = 16384
   vcpu   = 12
-}
-
-output "freebsd_build_vmhost03_root_password" {
-    value = "${module.freebsd_build_vmhost03.root_password}"
-    sensitive = true
 }
 
 module "freebsd_build_vmhost04" {
@@ -398,11 +343,6 @@ module "freebsd_build_vmhost04" {
   vcpu   = 12
 }
 
-output "freebsd_build_vmhost04_root_password" {
-    value = "${module.freebsd_build_vmhost04.root_password}"
-    sensitive = true
-}
-
 module "copr_cli_vmhost01" {
   source    = "./copr-cli-agent-deploy/"
   providers = {
@@ -420,11 +360,6 @@ module "copr_cli_vmhost01" {
   vcpu   = 2
 }
 
-output "copr_cli_vmhost01_root_password" {
-    value = "${module.copr_cli_vmhost01.root_password}"
-    sensitive = true
-}
-
 module "copr_cli_vmhost02" {
   source    = "./copr-cli-agent-deploy/"
   providers = {
@@ -440,11 +375,6 @@ module "copr_cli_vmhost02" {
 
   memory = 1024
   vcpu   = 2
-}
-
-output "copr_cli_vmhost02_root_password" {
-    value = "${module.copr_cli_vmhost02.root_password}"
-    sensitive = true
 }
 
 module "winxp_test_vmhost01" {
@@ -465,11 +395,6 @@ module "winxp_test_vmhost01" {
 
   memory = 1024
   vcpu = 2
-}
-
-output "winxp_test_vmhost01_root_password" {
-    value = "${module.winxp_test_vmhost01.root_password}"
-    sensitive = true
 }
 
 module "macos1013_build_vmhost01" {

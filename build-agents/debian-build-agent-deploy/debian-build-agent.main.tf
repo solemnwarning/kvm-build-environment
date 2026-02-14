@@ -14,16 +14,6 @@ data "terraform_remote_state" "build_infrastructure" {
   }
 }
 
-resource "random_password" "root_password" {
-  length = 12
-  special = false
-}
-
-output root_password {
-  value     = random_password.root_password.result
-  sensitive = true
-}
-
 resource "tls_private_key" "https_key" {
   algorithm = "RSA"
   rsa_bits = 3072
@@ -131,8 +121,6 @@ resource "local_file" "network-config" {
 resource "local_file" "user-data" {
   content  = templatefile("${ path.module }/debian-build-agent.user-data.tftpl", {
     domain = var.domain
-
-    root_password = random_password.root_password
 
     buildkite_agent_token  = var.buildkite_agent_token
     http_proxy_url         = var.http_proxy_url

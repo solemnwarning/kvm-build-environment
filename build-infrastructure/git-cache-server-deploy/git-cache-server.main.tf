@@ -6,16 +6,6 @@ terraform {
   }
 }
 
-resource "random_password" "root_password" {
-  length = 12
-  special = false
-}
-
-output root_password {
-  value     = random_password.root_password.result
-  sensitive = true
-}
-
 resource "tls_private_key" "ssh_host_rsa" {
   algorithm = "RSA"
   rsa_bits = 4096
@@ -100,7 +90,6 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
     hostname = var.hostname
     domain   = var.domain
 
-    root_password = random_password.root_password
     admin_ssh_keys = var.admin_ssh_keys
 
     http_proxy_url = var.http_proxy_url
