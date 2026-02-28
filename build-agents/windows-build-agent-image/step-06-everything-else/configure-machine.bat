@@ -22,13 +22,14 @@ IF EXIST D:\user-data (
 		
 		EXIT 0
 	)
+
+	echo {"Proxy":"!PROXY!","ProxyByPass":"","AutoconfigUrl":"","AutoDetect":false} > C:\WINDOWS\proxycfg.json
+	netsh winhttp set advproxy setting-scope=machine settings-file=C:\WINDOWS\proxycfg.json
 	
 	IF "!PROXY!" == "" (
-		rem netsh winhttp reset proxy
 		git config --system http.proxy ""
 		SET BUILDKITE_PROXY_URL=
 	) ELSE (
-		rem netsh winhttp set proxy "!PROXY!" "!NOPROXY!"
 		git config --system http.proxy "http://!PROXY!/"
 		SET BUILDKITE_PROXY_URL=http://!PROXY!
 	)
