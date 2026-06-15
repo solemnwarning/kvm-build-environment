@@ -17,7 +17,7 @@ IF EXIST D:\user-data (
 	SET /P desired_hostname=<D:\user-data
 	
 	IF NOT "!current_hostname!" == "!desired_hostname!" (
-		wmic computersystem where dnshostname="!current_hostname!" call rename name="!desired_hostname!"
+		"%systemroot%\System32\WindowsPowerShell\v1.0\powershell.exe" -Command Rename-Computer -NewName "!desired_hostname!" -Force
 		shutdown /r /f /t 10 /c "Applied hostname from user-data"
 		
 		EXIT 0

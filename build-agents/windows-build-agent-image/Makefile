@@ -64,22 +64,11 @@ S01_WINDOWS_BASE_DEPS := \
 step-01-windows-base: $(S01_WINDOWS_BASE_TARGET)
 
 $(S01_WINDOWS_BASE_TARGET): $(S01_WINDOWS_BASE_DEPS)
-	test -e "packer-Win2022/virtio-win-0.1.229.iso" \
-		|| wget "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.229-1/virtio-win-0.1.229.iso" \
-			-O "packer-Win2022/virtio-win-0.1.229.iso"
+	test -e "step-01-windows-base/virtio-win-0.1.285.iso" \
+		|| wget "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.285-1/virtio-win-0.1.285.iso" \
+			-O "step-01-windows-base/virtio-win-0.1.285.iso"
 	
-	rm -rf "packer-Win2022/output-qemu"
-	
-	(cd packer-Win2022/ && packer build -timestamp-ui -only=qemu -var "disk_size=120G" win2022-gui.json)
-	
-	timestamp=$$(date --utc '+%Y-%m-%dT%H:%M:%SZ') \
-		&& mkdir -p "step-01-windows-base/builds/$${timestamp}" \
-		&& ln "packer-Win2022/output-qemu/Win2022_20324.qcow2" "step-01-windows-base/builds/$${timestamp}/step-01-windows-base.qcow2" \
-		&& (cd "step-01-windows-base/builds/$${timestamp}/" && sha256sum step-01-windows-base.qcow2 > SHA256SUMS) \
-		&& ln -snf "$$timestamp" step-01-windows-base/builds/latest
-	
-	test -e step-01-windows-base/.first-successful-build || touch step-01-windows-base/.first-successful-build
-	touch step-01-windows-base/.last-successful-build
+	./build-step.sh step-01-windows-base
 
 S02_DOWNLOAD_VS_TOOLS_TARGET := step-02-download-vs-build-tools/.last-successful-build
 

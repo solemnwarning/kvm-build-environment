@@ -75,25 +75,27 @@ source qemu "step-04-install-vs-build-tools" {
   # Create a thin copy of the base image since we're just the input to another pipeline step anyway.
   use_backing_file = true
 
-  cpus        = 4
-  memory      = 4096
-  disk_size   = "120G"
-  accelerator = "kvm"
+  machine_type  = "q35"
+  cpu_model     = "Haswell"
+  cpus          = 4
+  memory        = 4096
+  accelerator   = "kvm"
+
+  disk_interface  = "virtio-scsi"
+  disk_size       = "120G"
 
   qemuargs = [
-    [ "-drive", "file=${var.output_dir}/${var.output_name},if=virtio,cache=unsafe,discard=unmap,format=qcow2,detect-zeroes=unmap" ],
-    [ "-drive", "file=${var.vs_build_tools},if=virtio,format=qcow2,readonly" ],
+    [ "-drive", "file=${var.output_dir}/${var.output_name},if=none,id=drive0,cache=unsafe,discard=unmap,format=qcow2,detect-zeroes=unmap" ],
+    [ "-drive", "file=${var.vs_build_tools},if=virtio,format=qcow2,readonly=on" ],
   ]
 
   headless = true
   # vnc_bind_address = "0.0.0.0"
 
-  communicator = "winrm"
-  winrm_username = "Administrator"
-  winrm_password = "packer"
-  winrm_use_ssl = true
-  winrm_insecure = true
-  winrm_timeout = "4h"
+  communicator    = "winrm"
+  winrm_username  = "Administrator"
+  winrm_password  = "packer"
+  winrm_use_ssl   = false
 
   shutdown_command = "shutdown /s /t 0 /f /d p:4:1 /c \"Packer Shutdown\""
   shutdown_timeout = "30m"

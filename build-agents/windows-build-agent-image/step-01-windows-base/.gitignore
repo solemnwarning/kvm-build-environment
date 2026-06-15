@@ -1,3 +1,4 @@
 /builds/
 /.first-successful-build
 /.last-successful-build
+/virtio-win-*.iso

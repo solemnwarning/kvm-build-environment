@@ -55,11 +55,10 @@ sub ubuntu_extras
 
 create("bionic-i386-sbuild",     "i386",  "bionic",    "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("bionic"));
 create("bionic-amd64-sbuild",    "amd64", "bionic",    "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("bionic"));
-create("focal-amd64-sbuild",     "amd64", "focal",     "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("focal"));
 create("jammy-amd64-sbuild",     "amd64", "jammy",     "http://archive.ubuntu.com/ubuntu/",          ubuntu_extras("jammy"));
 create("noble-amd64-sbuild",     "amd64", "noble",     "http://archive.ubuntu.com/ubuntu/", "gutsy", ubuntu_extras("noble"));
-create("plucky-amd64-sbuild",    "amd64", "plucky",    "http://archive.ubuntu.com/ubuntu/", "gutsy", ubuntu_extras("plucky"));
 create("questing-amd64-sbuild",  "amd64", "questing",  "http://archive.ubuntu.com/ubuntu/", "gutsy", ubuntu_extras("questing"));
+create("resolute-amd64-sbuild",  "amd64", "resolute",  "http://archive.ubuntu.com/ubuntu/", "gutsy", ubuntu_extras("resolute"));
 
 # Until all sbuild-createchroot processes have finished...
 while(%procs)
