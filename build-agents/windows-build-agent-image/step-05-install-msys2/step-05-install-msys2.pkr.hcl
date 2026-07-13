@@ -63,7 +63,7 @@ build {
   }
 
   provisioner "powershell" {
-    script = "../packer-Win2022/scripts/cleanup.ps1"
+    script = "../step-01-windows-base/cleanup.ps1"
   }
 
   post-processor "shell-local" {
