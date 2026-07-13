@@ -49,6 +49,21 @@ variable "stunnel_installer_url" {
   default = "https://www.stunnel.org/downloads/stunnel-latest-win64-installer.exe"
 }
 
+variable "nssm_version" {
+  type    = string
+  default = "2.24"
+}
+
+variable "nssm_url" {
+  type    = string
+  default = "https://nssm.cc/release/nssm-2.24.zip"
+}
+
+variable "nssm_sha256sum" {
+  type    = string
+  default = "727d1e42275c605e0f04aba98095c38a8e1e46def453cdffce42869428aa6743"
+}
+
 build {
   sources = ["source.qemu.step-06-everything-else"]
 
@@ -144,11 +159,20 @@ build {
 
   # Install Buildkite Agent
 
+  provisioner "shell-local" {
+    inline = [
+      "(test -e 'nssm-${ var.nssm_version }.zip' && echo '${ var.nssm_sha256sum }  nssm-${ var.nssm_version }.zip' | sha256sum -c) \\",
+      "  || (wget -O 'nssm-${ var.nssm_version }.zip' '${ var.nssm_url }' && echo '${ var.nssm_sha256sum }  nssm-${ var.nssm_version }.zip' | sha256sum -c)",
+    ]
+  }
+
   provisioner "file" {
+    generated = true
     sources = [
       "Get-RandomPassword.ps1",
       "Set-UserRights.ps1",
       "Add-FSAccessRule.ps1",
+      "nssm-${ var.nssm_version }.zip",
     ]
 
     destination = "C:\\TEMP\\"
@@ -193,12 +217,11 @@ build {
       "New-Item -ItemType directory -Path C:\\buildkite-agent\\builds | Out-Null",
       "C:\\TEMP\\Add-FSAccessRule.ps1 -Path 'C:\\buildkite-agent\\builds' -Identity 'buildkite-agent' -Rights 'FullControl' -AllowAccess $true",
 
-      "Invoke-WebRequest -Uri 'https://nssm.cc/release/nssm-2.24.zip' -OutFile 'nssm-2.24.zip'",
-      "Expand-Archive -Path nssm-2.24.zip -DestinationPath nssm-2.24",
-      "Remove-Item nssm-2.24.zip",
+      "Expand-Archive -Path C:\\TEMP\\nssm-${ var.nssm_version }.zip -DestinationPath nssm-${ var.nssm_version }",
+      "Remove-Item C:\\TEMP\\nssm-${ var.nssm_version }.zip",
 
-      "Copy-Item nssm-2.24\\nssm-2.24\\win64\\nssm.exe C:\\Windows\\system32\\nssm.exe",
-      "Remove-Item nssm-2.24 -Force -Recurse -ErrorAction SilentlyContinue",
+      "Copy-Item nssm-${ var.nssm_version }\\nssm-${ var.nssm_version }\\win64\\nssm.exe C:\\Windows\\system32\\nssm.exe",
+      "Remove-Item nssm-${ var.nssm_version } -Force -Recurse -ErrorAction SilentlyContinue",
 
       "nssm install 'Buildkite Agent' 'C:\\buildkite-agent\\buildkite-agent-run.bat'",
       "nssm set 'Buildkite Agent' ObjectName \"$${env:COMPUTERNAME}\\buildkite-agent\" \"$${buildkite_user_password}\"",
