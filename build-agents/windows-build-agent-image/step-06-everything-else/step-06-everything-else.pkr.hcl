@@ -274,6 +274,17 @@ build {
     ]
   }
 
+  # Remove Windows Defender.
+
+  provisioner "powershell" {
+    inline = [
+      "Write-Output \"Removing Windows Defender...\"",
+      "Uninstall-WindowsFeature -Name Windows-Defender",
+    ]
+  }
+
+  provisioner "windows-restart" {}
+
   # Update the stored password used for auto logon at the console.
   provisioner "powershell" {
     environment_vars = [
