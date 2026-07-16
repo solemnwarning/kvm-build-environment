@@ -12,12 +12,20 @@ variable "output_dir" {
   default = "output"
 }
 
+variable "iso_url" {
+  type = string
+}
+
+variable "iso_checksum" {
+  type = string
+}
+
 build {
   sources = ["source.qemu.freebsd"]
 
   provisioner "shell" {
     inline = [
-      "pkg install -y py311-cloud-init",
+      "pkg install -y py312-cloud-init",
       "echo cloudinit_enable=YES >> /etc/rc.conf",
     ]
   }
@@ -38,25 +46,25 @@ build {
       "  bash           \\",
       "  botan3         \\",
       "  buildkite-agent \\",
-      "  capstone4      \\",
+      "  capstone       \\",
       "  git            \\",
       "  gmake          \\",
       "  gsed           \\",
       "  jansson        \\",
       "  jq             \\",
-      "  lua53          \\",
-      "  lua53-luarocks \\",
+      "  lua54          \\",
+      "  lua54-luarocks \\",
       "  pidof          \\",
       "  pkgconf        \\",
       "  wget           \\",
-      "  wx30-gtk3      \\",
+      "  wx32-gtk3      \\",
       "  xauth          \\",
       "  xorg-fonts     \\",
       "  xorg-vfbserver",
 
       "patch -d /usr/local/etc/rc.d/ -i /tmp/buildkite-rc.d.patch",
 
-      "luarocks53 install busted",
+      "luarocks54 install busted",
 
       "chmod 0755 /usr/local/bin/xvfb-run",
 
@@ -109,9 +117,8 @@ build {
 }
 
 source qemu "freebsd" {
-  iso_url      = "https://download.freebsd.org/ftp/releases/VM-IMAGES/14.3-RELEASE/amd64/Latest/FreeBSD-14.3-RELEASE-amd64-BASIC-CLOUDINIT-ufs.qcow2.xz"
-  iso_checksum = "none"
-  # iso_checksum = "file:https://download.freebsd.org/ftp/snapshots/VM-IMAGES/14.0-STABLE/amd64/Latest/CHECKSUM.SHA256"
+  iso_url      = var.iso_url
+  iso_checksum = var.iso_checksum
   disk_image   = true
 
   boot_wait = "5m"
