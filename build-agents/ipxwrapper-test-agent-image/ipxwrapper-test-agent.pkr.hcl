@@ -31,7 +31,7 @@ build {
   provisioner "file" {
     sources = [
       "buildkite-agent.cfg",
-      "buildkite-checkout-hook",
+      # "buildkite-checkout-hook",
       "buildkite-environment-hook",
       "powernapd.conf",
     ]
@@ -62,7 +62,7 @@ build {
       "apt-get -y update",
       "apt-get -y install buildkite-agent",
 
-      "install -m 0755 -o root -g root /tmp/buildkite-checkout-hook    /etc/buildkite-agent/hooks/checkout",
+      # "install -m 0755 -o root -g root /tmp/buildkite-checkout-hook    /etc/buildkite-agent/hooks/checkout",
       "install -m 0755 -o root -g root /tmp/buildkite-environment-hook /etc/buildkite-agent/hooks/environment",
       "install -m 0644 -o root -g root /tmp/buildkite-agent.cfg        /etc/buildkite-agent/buildkite-agent.cfg",
 
@@ -100,7 +100,7 @@ build {
 
   provisioner "shell" {
     inline = [
-      "apt-get install -y libconfig-ini-perl libipc-run-perl libnetaddr-ip-perl libio-fdpass-perl mtools",
+      "apt-get install -y libconfig-ini-perl libipc-run-perl libnetaddr-ip-perl libio-fdpass-perl mtools mingw-w64 nasm make gcovr",
       "install -D -m 0755 -o root -g root /tmp/ipxtester     /opt/ipxtester/ipxtester",
       "ln -sv /mnt/ipxtester-data/ipxtester.ini /opt/ipxtester/ipxtester.ini",
 
@@ -121,6 +121,14 @@ build {
       "systemctl daemon-reload",
       "systemctl enable ipxtester-init.service",
     ]
+  }
+
+  provisioner "file" {
+    sources = [
+      "99_noapf.cfg",
+    ]
+
+    destination = "/etc/default/grub.d/"
   }
 
   provisioner "shell" {

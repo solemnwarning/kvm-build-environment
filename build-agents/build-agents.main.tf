@@ -28,46 +28,6 @@ provider "libvirt" {
   uri = "qemu+ssh://root@vmhost04.lan.solemnwarning.net/system?sshauth=privkey"
 }
 
-module "ipxwrapper_test_vmhost01" {
-  source    = "./ipxwrapper-test-agent-deploy/"
-  providers = {
-    libvirt = libvirt.vmhost01
-  }
-
-  template_dir = "${path.root}/output/vmhost01/ipxwrapper-test-agent"
-
-  hostname_suffix = "-vm01"
-  domain = "build.solemnwarning.net"
-
-  buildkite_agent_token = var.buildkite_agent_token
-  http_proxy_url = var.http_proxy_url
-  admin_ssh_keys = var.admin_ssh_keys
-
-  memory = 16384
-  vcpu = 8
-  spawn = 1
-}
-
-module "ipxwrapper_test_vmhost02" {
-  source    = "./ipxwrapper-test-agent-deploy/"
-  providers = {
-    libvirt = libvirt.vmhost02
-  }
-
-  template_dir = "${path.root}/output/vmhost02/ipxwrapper-test-agent"
-
-  hostname_suffix = "-vm02"
-  domain = "build.solemnwarning.net"
-
-  buildkite_agent_token = var.buildkite_agent_token
-  http_proxy_url = var.http_proxy_url
-  admin_ssh_keys = var.admin_ssh_keys
-
-  memory = 16384
-  vcpu = 8
-  spawn = 1
-}
-
 module "ipxwrapper_test_vmhost03" {
   source    = "./ipxwrapper-test-agent-deploy/"
   providers = {
@@ -83,9 +43,9 @@ module "ipxwrapper_test_vmhost03" {
   http_proxy_url = var.http_proxy_url
   admin_ssh_keys = var.admin_ssh_keys
 
-  memory = 65536
+  memory = 57344
   vcpu = 32
-  spawn = 4
+  spawn = 1
 }
 
 module "ipxwrapper_test_vmhost04" {
@@ -103,9 +63,9 @@ module "ipxwrapper_test_vmhost04" {
   http_proxy_url = var.http_proxy_url
   admin_ssh_keys = var.admin_ssh_keys
 
-  memory = 65536
+  memory = 57344
   vcpu = 28
-  spawn = 4
+  spawn = 1
 }
 
 module "windows_build_vmhost01" {
