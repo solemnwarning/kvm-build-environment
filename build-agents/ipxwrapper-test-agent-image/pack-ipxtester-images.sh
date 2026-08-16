@@ -8,10 +8,10 @@ DISK_SIZE="120G"
 
 IPXTESTER_IMAGES=(
     "ipxtester-images/ipxtest-director-2024-07-03"
-    "ipxtester-images/ipxtest-winXPx86-2023-09-11"
+    "ipxtester-images/ipxtest-winXPx86-2026-08-04"
     "ipxtester-images/ipxtest-win7x64-2023-09-12"
     "ipxtester-images/ipxtest-win81x86-2023-09-11"
-    "ipxtester-images/ipxtest-win10x64-2025-07-27"
+    "ipxtester-images/ipxtest-win10x64-2026-08-02"
     "ipxtester-images/ipxtest-win11x64-2025-07-31"
     "ipxtester-images/ipxtest-win98-2024-11-03"
 )
